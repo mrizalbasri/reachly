@@ -15,3 +15,6 @@ todos.json
 .codegraph/
 
 docs/*
+
+.vscode/
+.tanstack/
