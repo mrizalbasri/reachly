@@ -10,6 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SignInRouteImport } from './routes/sign-in'
+import { Route as SignUpRouteImport } from './routes/sign-up'
 import { Route as KolDirectoryIndexRouteImport } from './routes/kol-directory/index'
 import { Route as KolDirectoryKolIdRouteImport } from './routes/kol-directory/$kolId'
 import { Route as PipelineIndexRouteImport } from './routes/pipeline/index'
@@ -17,6 +19,16 @@ import { Route as PipelineIndexRouteImport } from './routes/pipeline/index'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignInRoute = SignInRouteImport.update({
+  id: '/sign-in',
+  path: '/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignUpRoute = SignUpRouteImport.update({
+  id: '/sign-up',
+  path: '/sign-up',
   getParentRoute: () => rootRouteImport,
 } as any)
 const KolDirectoryIndexRoute = KolDirectoryIndexRouteImport.update({
@@ -37,12 +49,16 @@ const PipelineIndexRoute = PipelineIndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/sign-in': typeof SignInRoute
+  '/sign-up': typeof SignUpRoute
   '/kol-directory/$kolId': typeof KolDirectoryKolIdRoute
   '/kol-directory/': typeof KolDirectoryIndexRoute
   '/pipeline/': typeof PipelineIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/sign-in': typeof SignInRoute
+  '/sign-up': typeof SignUpRoute
   '/kol-directory/$kolId': typeof KolDirectoryKolIdRoute
   '/kol-directory': typeof KolDirectoryIndexRoute
   '/pipeline': typeof PipelineIndexRoute
@@ -50,18 +66,34 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/sign-in': typeof SignInRoute
+  '/sign-up': typeof SignUpRoute
   '/kol-directory/$kolId': typeof KolDirectoryKolIdRoute
   '/kol-directory/': typeof KolDirectoryIndexRoute
   '/pipeline/': typeof PipelineIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/kol-directory/$kolId' | '/kol-directory/' | '/pipeline/'
+  fullPaths:
+    | '/'
+    | '/sign-in'
+    | '/sign-up'
+    | '/kol-directory/$kolId'
+    | '/kol-directory/'
+    | '/pipeline/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/kol-directory/$kolId' | '/kol-directory' | '/pipeline'
+  to:
+    | '/'
+    | '/sign-in'
+    | '/sign-up'
+    | '/kol-directory/$kolId'
+    | '/kol-directory'
+    | '/pipeline'
   id:
     | '__root__'
     | '/'
+    | '/sign-in'
+    | '/sign-up'
     | '/kol-directory/$kolId'
     | '/kol-directory/'
     | '/pipeline/'
@@ -69,6 +101,8 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SignInRoute: typeof SignInRoute
+  SignUpRoute: typeof SignUpRoute
   KolDirectoryKolIdRoute: typeof KolDirectoryKolIdRoute
   KolDirectoryIndexRoute: typeof KolDirectoryIndexRoute
   PipelineIndexRoute: typeof PipelineIndexRoute
@@ -81,6 +115,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-in': {
+      id: '/sign-in'
+      path: '/sign-in'
+      fullPath: '/sign-in'
+      preLoaderRoute: typeof SignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sign-up': {
+      id: '/sign-up'
+      path: '/sign-up'
+      fullPath: '/sign-up'
+      preLoaderRoute: typeof SignUpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/kol-directory/': {
@@ -109,6 +157,8 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SignInRoute: SignInRoute,
+  SignUpRoute: SignUpRoute,
   KolDirectoryKolIdRoute: KolDirectoryKolIdRoute,
   KolDirectoryIndexRoute: KolDirectoryIndexRoute,
   PipelineIndexRoute: PipelineIndexRoute,
