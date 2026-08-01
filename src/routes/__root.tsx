@@ -1,8 +1,9 @@
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
+import { HeadContent, Outlet, Scripts, createRootRoute } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 
 import ClerkProvider from '../integrations/clerk/provider'
+import Navbar from '../components/layout/navbar'
 
 import appCss from '../styles.css?url'
 
@@ -17,10 +18,18 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'TanStack Start Starter',
+        title: 'Reachly — Platform Manajemen Kerja Sama Influencer/KOL',
+      },
+      {
+        name: 'description',
+        content: 'Platform manajemen kerja sama influencer/KOL terpusat untuk brand dan agency di Indonesia.',
       },
     ],
     links: [
+      {
+        rel: 'icon',
+        href: '/logo.webp',
+      },
       {
         rel: 'stylesheet',
         href: appCss,
@@ -32,13 +41,16 @@ export const Route = createRootRoute({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="id">
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body className="bg-[#FFFFFF] text-[#1C1C1E] min-h-screen flex flex-col antialiased">
         <ClerkProvider>
-          {children}
+          <Navbar />
+          <main className="flex-1 max-w-7xl w-full mx-auto p-6 md:p-8">
+            {children || <Outlet />}
+          </main>
           <TanStackDevtools
             config={{
               position: 'bottom-right',
