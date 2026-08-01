@@ -10,33 +10,68 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as KolDirectoryIndexRouteImport } from './routes/kol-directory/index'
+import { Route as KolDirectoryKolIdRouteImport } from './routes/kol-directory/$kolId'
+import { Route as PipelineIndexRouteImport } from './routes/pipeline/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const KolDirectoryIndexRoute = KolDirectoryIndexRouteImport.update({
+  id: '/kol-directory/',
+  path: '/kol-directory/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KolDirectoryKolIdRoute = KolDirectoryKolIdRouteImport.update({
+  id: '/kol-directory/$kolId',
+  path: '/kol-directory/$kolId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PipelineIndexRoute = PipelineIndexRouteImport.update({
+  id: '/pipeline/',
+  path: '/pipeline/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/kol-directory/$kolId': typeof KolDirectoryKolIdRoute
+  '/kol-directory/': typeof KolDirectoryIndexRoute
+  '/pipeline/': typeof PipelineIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/kol-directory/$kolId': typeof KolDirectoryKolIdRoute
+  '/kol-directory': typeof KolDirectoryIndexRoute
+  '/pipeline': typeof PipelineIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/kol-directory/$kolId': typeof KolDirectoryKolIdRoute
+  '/kol-directory/': typeof KolDirectoryIndexRoute
+  '/pipeline/': typeof PipelineIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/kol-directory/$kolId' | '/kol-directory/' | '/pipeline/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/kol-directory/$kolId' | '/kol-directory' | '/pipeline'
+  id:
+    | '__root__'
+    | '/'
+    | '/kol-directory/$kolId'
+    | '/kol-directory/'
+    | '/pipeline/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  KolDirectoryKolIdRoute: typeof KolDirectoryKolIdRoute
+  KolDirectoryIndexRoute: typeof KolDirectoryIndexRoute
+  PipelineIndexRoute: typeof PipelineIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +83,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/kol-directory/': {
+      id: '/kol-directory/'
+      path: '/kol-directory'
+      fullPath: '/kol-directory/'
+      preLoaderRoute: typeof KolDirectoryIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/kol-directory/$kolId': {
+      id: '/kol-directory/$kolId'
+      path: '/kol-directory/$kolId'
+      fullPath: '/kol-directory/$kolId'
+      preLoaderRoute: typeof KolDirectoryKolIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pipeline/': {
+      id: '/pipeline/'
+      path: '/pipeline'
+      fullPath: '/pipeline/'
+      preLoaderRoute: typeof PipelineIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  KolDirectoryKolIdRoute: KolDirectoryKolIdRoute,
+  KolDirectoryIndexRoute: KolDirectoryIndexRoute,
+  PipelineIndexRoute: PipelineIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
