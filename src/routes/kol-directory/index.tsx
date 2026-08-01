@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { Plus, Search, Filter, Users, Eye, Kanban, Trash2, CheckCircle2 } from 'lucide-react'
+import { Plus, Search, Users, Eye, Kanban, Trash2, CheckCircle2 } from 'lucide-react'
 
 import { getKols, deleteKol } from '../../server/kol'
 import { createPipelineEntry } from '../../server/pipeline'
@@ -90,7 +90,7 @@ function KolDirectoryPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Header Section */}
+      {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#1C1C1E] tracking-tight">Direktori KOL</h1>
@@ -98,32 +98,36 @@ function KolDirectoryPage() {
             Database terpusat influencer & KOL untuk riset campaign yang efisien.
           </p>
         </div>
-        <Button onClick={() => setIsFormOpen(true)} className="self-start md:self-auto">
+        <Button onClick={() => setIsFormOpen(true)} className="self-start md:self-auto shadow-sm">
           <Plus className="w-4 h-4" />
           Tambah KOL Baru
         </Button>
       </div>
 
-      {/* Filter & Search Bar */}
-      <Card className="p-4 bg-[#FBFBFC]">
-        <div className="flex flex-col md:flex-row items-center gap-3">
-          <div className="relative flex-1 w-full">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#8E8E93]" />
-            <input
-              type="text"
-              placeholder="Cari berdasarkan nama..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 text-xs bg-white border border-[#EEEEF0] rounded-xl focus:outline-none focus:border-[#7C3AED]"
-            />
+      {/* Main Hybrid Layout (Sub-Sidebar Left + Glass Content Right) */}
+      <div className="flex flex-col lg:flex-row gap-6 items-start">
+        {/* Left Sub-Sidebar Panel */}
+        <aside className="w-full lg:w-64 glass-panel p-5 rounded-2xl flex flex-col gap-5 shrink-0">
+          <div>
+            <h3 className="text-xs font-bold text-[#1C1C1E] uppercase tracking-wider mb-2.5">Cari & Filter</h3>
+            <div className="relative w-full">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#8E8E93]" />
+              <input
+                type="text"
+                placeholder="Nama KOL..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 text-xs bg-white/90 border border-[#EEEEF0] rounded-xl focus:outline-none focus:border-[#7C3AED] transition-all"
+              />
+            </div>
           </div>
 
-          <div className="flex items-center gap-2 w-full md:w-auto">
-            <Filter className="w-4 h-4 text-[#8E8E93]" />
+          <div className="flex flex-col gap-2">
+            <label className="text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">Platform</label>
             <select
               value={platform}
               onChange={(e) => setPlatform(e.target.value)}
-              className="px-3 py-2 text-xs bg-white border border-[#EEEEF0] rounded-xl text-[#1C1C1E] focus:outline-none"
+              className="w-full px-3 py-2 text-xs bg-white/90 border border-[#EEEEF0] rounded-xl text-[#1C1C1E] focus:outline-none focus:border-[#7C3AED]"
             >
               <option value="all">Semua Platform</option>
               <option value="Instagram">Instagram</option>
@@ -131,11 +135,14 @@ function KolDirectoryPage() {
               <option value="YouTube">YouTube</option>
               <option value="Twitter">Twitter / X</option>
             </select>
+          </div>
 
+          <div className="flex flex-col gap-2">
+            <label className="text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">Niche</label>
             <select
               value={niche}
               onChange={(e) => setNiche(e.target.value)}
-              className="px-3 py-2 text-xs bg-white border border-[#EEEEF0] rounded-xl text-[#1C1C1E] focus:outline-none"
+              className="w-full px-3 py-2 text-xs bg-white/90 border border-[#EEEEF0] rounded-xl text-[#1C1C1E] focus:outline-none focus:border-[#7C3AED]"
             >
               <option value="all">Semua Niche</option>
               <option value="Beauty">Beauty & Skincare</option>
@@ -149,8 +156,17 @@ function KolDirectoryPage() {
               <option value="Finance">Finance & Business</option>
             </select>
           </div>
-        </div>
-      </Card>
+
+          <div className="pt-3 border-t border-[#EEEEF0]/80">
+            <div className="flex items-center justify-between text-xs text-[#8E8E93]">
+              <span>Total Hasil:</span>
+              <span className="font-semibold text-[#7C3AED] bg-purple-50 px-2 py-0.5 rounded-full">{kolsList.length} KOL</span>
+            </div>
+          </div>
+        </aside>
+
+        {/* Right Glass Content Canvas */}
+        <div className="flex-1 w-full">
 
       {/* KOL Table / Grid */}
       {loading ? (
@@ -269,6 +285,8 @@ function KolDirectoryPage() {
           </table>
         </div>
       )}
+        </div>
+      </div>
 
       {/* Modal Form Tambah KOL */}
       <Dialog

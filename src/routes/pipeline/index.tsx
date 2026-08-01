@@ -201,7 +201,7 @@ function PipelinePage() {
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
         >
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 overflow-x-auto pb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5 w-full pb-6 pt-1">
             {COLUMNS.map((col) => {
               const columnEntries = entries.filter((e) => e.status === col.id)
 
@@ -273,13 +273,13 @@ function KanbanColumn({
   onDelete: (id: string) => void
 }) {
   return (
-    <div className="bg-[#FBFBFC] rounded-2xl border border-[#EEEEF0] p-3 flex flex-col gap-3 min-h-[500px]">
+    <div className="w-full glass-panel rounded-2xl p-3 flex flex-col gap-3 min-h-[500px]">
       {/* Column Header */}
-      <div className="flex items-center justify-between px-1">
-        <div className="flex items-center gap-2">
-          <Badge status={column.id}>{column.title}</Badge>
+      <div className="flex items-center justify-between px-0.5">
+        <div className="flex items-center gap-1.5">
+          <Badge status={column.id} className="text-[10px] px-2 py-0.5">{column.title}</Badge>
         </div>
-        <span className="text-[11px] font-bold text-[#8E8E93] bg-white px-2 py-0.5 rounded-full border border-[#EEEEF0]">
+        <span className="text-[10px] font-bold text-[#8E8E93] bg-white/90 px-1.5 py-0.2 rounded-full border border-[#EEEEF0]/80">
           {entries.length}
         </span>
       </div>
