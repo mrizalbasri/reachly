@@ -16,7 +16,7 @@ export function Button({
   const baseStyles = 'inline-flex items-center justify-center font-medium rounded-full transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#7C3AED] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed'
 
   const variants = {
-    primary: 'bg-logo-gradient text-white hover:opacity-95 shadow-sm active:scale-98',
+    primary: 'glass-btn-primary text-white shadow-sm active:scale-98',
     secondary: 'bg-[#FBFBFC] text-[#1C1C1E] border border-[#EEEEF0] hover:bg-gray-100 active:scale-98',
     outline: 'border border-[#EEEEF0] text-[#1C1C1E] hover:bg-[#FBFBFC] active:scale-98',
     ghost: 'text-[#8E8E93] hover:text-[#1C1C1E] hover:bg-[#FBFBFC]',

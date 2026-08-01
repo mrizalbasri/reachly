@@ -34,17 +34,17 @@ export default function Navbar() {
   ]
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-[#EEEEF0] px-6 py-3">
+    <header className="sticky top-0 z-50 glass-header px-6 py-3 transition-all">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
         {/* Brand Logo */}
-        <Link to="/kol-directory" className="flex items-center gap-2 group">
+        <Link to="/kol-directory" className="flex items-center gap-2.5 group">
           <img
             src="/logo.webp"
             alt="Reachly Logo"
             className="w-10 h-10 rounded-xl shadow-sm transition-transform group-hover:scale-105 object-contain"
           />
           <div className="flex flex-col">
-            <span className="font-bold text-xl tracking-tight text-[#1C1C1E] flex items-center gap-1">
+            <span className="font-bold text-xl tracking-tight text-[#1C1C1E] flex items-center gap-1.5">
               Reachly
               <span className="text-[10px] uppercase font-bold tracking-widest bg-purple-100 text-[#7C3AED] px-1.5 py-0.5 rounded-full">
                 MVP
@@ -54,7 +54,7 @@ export default function Navbar() {
         </Link>
 
         {/* Tab Navigation */}
-        <nav className="flex items-center gap-1 bg-[#FBFBFC] p-1.5 rounded-full border border-[#EEEEF0]">
+        <nav className="flex items-center gap-1 bg-[#FBFBFC]/80 backdrop-blur-md p-1.5 rounded-full border border-[#EEEEF0]/80 shadow-xs">
           {navItems.map((item) => {
             const isActive = currentPath.startsWith(item.path) || (item.path === '/kol-directory' && currentPath === '/')
             const Icon = item.icon
@@ -79,8 +79,8 @@ export default function Navbar() {
                 to={item.path}
                 className={`flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-full transition-all duration-150 ${
                   isActive
-                    ? 'bg-[#7C3AED] text-white shadow-sm'
-                    : 'text-[#8E8E93] hover:text-[#1C1C1E] hover:bg-white'
+                    ? 'bg-[#7C3AED] text-white shadow-sm font-semibold'
+                    : 'text-[#8E8E93] hover:text-[#1C1C1E] hover:bg-white/80'
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -97,7 +97,7 @@ export default function Navbar() {
             <input
               type="text"
               placeholder="Cari KOL atau campaign... (⌘K)"
-              className="pl-9 pr-4 py-1.5 text-xs bg-[#FBFBFC] border border-[#EEEEF0] rounded-full w-56 focus:outline-none focus:border-[#7C3AED] focus:ring-1 focus:ring-[#7C3AED] transition-all"
+              className="pl-9 pr-4 py-1.5 text-xs bg-white/80 backdrop-blur-sm border border-[#EEEEF0] rounded-full w-56 focus:outline-none focus:border-[#7C3AED] focus:ring-1 focus:ring-[#7C3AED] transition-all shadow-xs"
             />
           </div>
 

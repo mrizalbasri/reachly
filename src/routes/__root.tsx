@@ -48,7 +48,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body className="bg-[#FFFFFF] text-[#1C1C1E] min-h-screen flex flex-col antialiased">
         <ClerkProvider>
           <Navbar />
-          <main className="flex-1 max-w-7xl w-full mx-auto p-6 md:p-8">
+          <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 lg:p-8">
             {children || <Outlet />}
           </main>
           <TanStackDevtools
