@@ -57,6 +57,7 @@ export const pipelineEntries = pgTable('pipeline_entries', {
   campaignId: uuid('campaign_id').references(() => campaigns.id),
   status: pipelineStatusEnum('status').default('prospek').notNull(),
   notes: text('notes'),
+  deadline: timestamp('deadline'),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 })

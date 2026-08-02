@@ -14,6 +14,7 @@ export const getPipelineEntries = createServerFn({ method: 'GET' }).handler(asyn
         campaignId: pipelineEntries.campaignId,
         status: pipelineEntries.status,
         notes: pipelineEntries.notes,
+        deadline: pipelineEntries.deadline,
         createdAt: pipelineEntries.createdAt,
         updatedAt: pipelineEntries.updatedAt,
         kolName: kols.name,
@@ -101,5 +102,24 @@ export const deletePipelineEntry = createServerFn({ method: 'POST' })
     } catch (err) {
       console.error('Error deleting pipeline entry:', err)
       throw new Error('Gagal menghapus entry pipeline')
+    }
+  })
+
+export const updatePipelineDeadline = createServerFn({ method: 'POST' })
+  .validator((input: { id: string; deadline: string | null }) => input)
+  .handler(async ({ data }) => {
+    try {
+      const [updated] = await db
+        .update(pipelineEntries)
+        .set({
+          deadline: data.deadline ? new Date(data.deadline) : null,
+          updatedAt: new Date(),
+        })
+        .where(eq(pipelineEntries.id, data.id))
+        .returning()
+      return updated
+    } catch (err) {
+      console.error('Error updating pipeline deadline:', err)
+      throw new Error('Gagal memperbarui deadline')
     }
   })
