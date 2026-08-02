@@ -12,6 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as SignUpRouteImport } from './routes/sign-up'
+import { Route as CampaignsIndexRouteImport } from './routes/campaigns/index'
+import { Route as CampaignsCampaignIdRouteImport } from './routes/campaigns/$campaignId'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as KolDirectoryIndexRouteImport } from './routes/kol-directory/index'
 import { Route as KolDirectoryKolIdRouteImport } from './routes/kol-directory/$kolId'
 import { Route as PipelineIndexRouteImport } from './routes/pipeline/index'
@@ -29,6 +32,21 @@ const SignInRoute = SignInRouteImport.update({
 const SignUpRoute = SignUpRouteImport.update({
   id: '/sign-up',
   path: '/sign-up',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CampaignsIndexRoute = CampaignsIndexRouteImport.update({
+  id: '/campaigns/',
+  path: '/campaigns/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CampaignsCampaignIdRoute = CampaignsCampaignIdRouteImport.update({
+  id: '/campaigns/$campaignId',
+  path: '/campaigns/$campaignId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/dashboard/',
+  path: '/dashboard/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const KolDirectoryIndexRoute = KolDirectoryIndexRouteImport.update({
@@ -51,7 +69,10 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
+  '/campaigns/$campaignId': typeof CampaignsCampaignIdRoute
   '/kol-directory/$kolId': typeof KolDirectoryKolIdRoute
+  '/campaigns/': typeof CampaignsIndexRoute
+  '/dashboard/': typeof DashboardIndexRoute
   '/kol-directory/': typeof KolDirectoryIndexRoute
   '/pipeline/': typeof PipelineIndexRoute
 }
@@ -59,7 +80,10 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
+  '/campaigns/$campaignId': typeof CampaignsCampaignIdRoute
   '/kol-directory/$kolId': typeof KolDirectoryKolIdRoute
+  '/campaigns': typeof CampaignsIndexRoute
+  '/dashboard': typeof DashboardIndexRoute
   '/kol-directory': typeof KolDirectoryIndexRoute
   '/pipeline': typeof PipelineIndexRoute
 }
@@ -68,7 +92,10 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
+  '/campaigns/$campaignId': typeof CampaignsCampaignIdRoute
   '/kol-directory/$kolId': typeof KolDirectoryKolIdRoute
+  '/campaigns/': typeof CampaignsIndexRoute
+  '/dashboard/': typeof DashboardIndexRoute
   '/kol-directory/': typeof KolDirectoryIndexRoute
   '/pipeline/': typeof PipelineIndexRoute
 }
@@ -78,7 +105,10 @@ export interface FileRouteTypes {
     | '/'
     | '/sign-in'
     | '/sign-up'
+    | '/campaigns/$campaignId'
     | '/kol-directory/$kolId'
+    | '/campaigns/'
+    | '/dashboard/'
     | '/kol-directory/'
     | '/pipeline/'
   fileRoutesByTo: FileRoutesByTo
@@ -86,7 +116,10 @@ export interface FileRouteTypes {
     | '/'
     | '/sign-in'
     | '/sign-up'
+    | '/campaigns/$campaignId'
     | '/kol-directory/$kolId'
+    | '/campaigns'
+    | '/dashboard'
     | '/kol-directory'
     | '/pipeline'
   id:
@@ -94,7 +127,10 @@ export interface FileRouteTypes {
     | '/'
     | '/sign-in'
     | '/sign-up'
+    | '/campaigns/$campaignId'
     | '/kol-directory/$kolId'
+    | '/campaigns/'
+    | '/dashboard/'
     | '/kol-directory/'
     | '/pipeline/'
   fileRoutesById: FileRoutesById
@@ -103,7 +139,10 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SignInRoute: typeof SignInRoute
   SignUpRoute: typeof SignUpRoute
+  CampaignsCampaignIdRoute: typeof CampaignsCampaignIdRoute
   KolDirectoryKolIdRoute: typeof KolDirectoryKolIdRoute
+  CampaignsIndexRoute: typeof CampaignsIndexRoute
+  DashboardIndexRoute: typeof DashboardIndexRoute
   KolDirectoryIndexRoute: typeof KolDirectoryIndexRoute
   PipelineIndexRoute: typeof PipelineIndexRoute
 }
@@ -129,6 +168,27 @@ declare module '@tanstack/react-router' {
       path: '/sign-up'
       fullPath: '/sign-up'
       preLoaderRoute: typeof SignUpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/campaigns/': {
+      id: '/campaigns/'
+      path: '/campaigns'
+      fullPath: '/campaigns/'
+      preLoaderRoute: typeof CampaignsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/campaigns/$campaignId': {
+      id: '/campaigns/$campaignId'
+      path: '/campaigns/$campaignId'
+      fullPath: '/campaigns/$campaignId'
+      preLoaderRoute: typeof CampaignsCampaignIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/': {
+      id: '/dashboard/'
+      path: '/dashboard'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/kol-directory/': {
@@ -159,7 +219,10 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SignInRoute: SignInRoute,
   SignUpRoute: SignUpRoute,
+  CampaignsCampaignIdRoute: CampaignsCampaignIdRoute,
   KolDirectoryKolIdRoute: KolDirectoryKolIdRoute,
+  CampaignsIndexRoute: CampaignsIndexRoute,
+  DashboardIndexRoute: DashboardIndexRoute,
   KolDirectoryIndexRoute: KolDirectoryIndexRoute,
   PipelineIndexRoute: PipelineIndexRoute,
 }

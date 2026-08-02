@@ -1,5 +1,5 @@
 import { Link, useLocation } from '@tanstack/react-router'
-import { Search, Users, Kanban, Megaphone, BarChart2 } from 'lucide-react'
+import { Search, Users, Kanban, Megaphone, BarChart2, LayoutDashboard } from 'lucide-react'
 import HeaderUser from '../../integrations/clerk/header-user'
 
 export default function Navbar() {
@@ -7,6 +7,11 @@ export default function Navbar() {
   const currentPath = location.pathname
 
   const navItems = [
+    {
+      label: 'Dasbor',
+      path: '/dashboard',
+      icon: LayoutDashboard,
+    },
     {
       label: 'Direktori KOL',
       path: '/kol-directory',
@@ -23,7 +28,6 @@ export default function Navbar() {
       label: 'Kampanye',
       path: '/campaigns',
       icon: Megaphone,
-      disabled: true,
     },
     {
       label: 'Analisis ROI',
@@ -56,7 +60,7 @@ export default function Navbar() {
         {/* Tab Navigation */}
         <nav className="flex items-center gap-1 bg-[#FBFBFC]/80 backdrop-blur-md p-1.5 rounded-full border border-[#EEEEF0]/80 shadow-xs">
           {navItems.map((item) => {
-            const isActive = currentPath.startsWith(item.path) || (item.path === '/kol-directory' && currentPath === '/')
+            const isActive = currentPath.startsWith(item.path) || (item.path === '/dashboard' && currentPath === '/')
             const Icon = item.icon
 
             if (item.disabled) {
