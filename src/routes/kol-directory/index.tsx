@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { Plus, Search, Users, Eye, Kanban, Trash2, CheckCircle2 } from 'lucide-react'
+import { Plus, Search, Users, Eye, Kanban, Trash2, CheckCircle2, Download } from 'lucide-react'
 
 import { getKols, deleteKol } from '../../server/kol'
 import { createPipelineEntry } from '../../server/pipeline'
@@ -8,28 +8,12 @@ import { Button } from '../../components/ui/button'
 import { Card } from '../../components/ui/card'
 import { Dialog } from '../../components/ui/dialog'
 import { KolForm } from '../../components/kol/kol-form'
+import { formatFollowers, formatIDR } from '../../utils/formatters'
+import { downloadCSV } from '../../utils/export'
 
 export const Route = createFileRoute('/kol-directory/')({
   component: KolDirectoryPage,
 })
-
-function formatFollowers(num: number | null | undefined): string {
-  if (!num) return '0'
-  if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M`
-  if (num >= 1_000) return `${(num / 1_000).toFixed(0)}K`
-  return num.toString()
-}
-
-function formatIDR(val: string | number | null | undefined): string {
-  if (!val) return 'Rp 0'
-  const num = typeof val === 'string' ? parseFloat(val) : val
-  if (isNaN(num)) return 'Rp 0'
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    maximumFractionDigits: 0,
-  }).format(num)
-}
 
 function getAvatarBg(name: string): string {
   const gradients = [
@@ -88,6 +72,23 @@ function KolDirectoryPage() {
     }
   }
 
+  const handleExportKols = () => {
+    if (!kolsList.length) return
+    const headers = ['Nama KOL', 'Platform', 'Username', 'Niche', 'Followers', 'Engagement Rate', 'Rate Card (IDR)', 'Kontak', 'Catatan']
+    const exportRows = kolsList.map((k) => [
+      k.name || '',
+      k.platform || '',
+      k.username || '',
+      k.niche || '',
+      k.followers || 0,
+      k.engagementRate ? `${k.engagementRate}%` : '-',
+      k.ratePerPost || '0',
+      k.contact || '',
+      k.notes || '',
+    ])
+    downloadCSV(`direktori_kol_reachly_${new Date().toISOString().slice(0, 10)}.csv`, headers, exportRows)
+  }
+
   return (
     <div className="flex flex-col gap-6">
       {/* Top Header */}
@@ -98,10 +99,21 @@ function KolDirectoryPage() {
             Database terpusat influencer & KOL untuk riset campaign yang efisien.
           </p>
         </div>
-        <Button onClick={() => setIsFormOpen(true)} className="self-start md:self-auto shadow-sm">
-          <Plus className="w-4 h-4" />
-          Tambah KOL Baru
-        </Button>
+        <div className="flex items-center gap-2 self-start md:self-auto">
+          <Button
+            onClick={handleExportKols}
+            variant="outline"
+            disabled={kolsList.length === 0}
+            className="text-xs text-[#7C3AED] border-purple-200 hover:bg-purple-50 shadow-xs"
+          >
+            <Download className="w-4 h-4 mr-1" />
+            Ekspor Data KOL (CSV)
+          </Button>
+          <Button onClick={() => setIsFormOpen(true)} className="shadow-sm">
+            <Plus className="w-4 h-4" />
+            Tambah KOL Baru
+          </Button>
+        </div>
       </div>
 
       {/* Main Hybrid Layout (Sub-Sidebar Left + Glass Content Right) */}

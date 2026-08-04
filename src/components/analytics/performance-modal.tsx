@@ -3,7 +3,7 @@ import { Dialog } from '../ui/dialog'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { upsertPerformanceRecord } from '../../server/analytics'
-import { BarChart2, Eye, ThumbsUp, ShoppingBag } from 'lucide-react'
+import { Eye, ThumbsUp, ShoppingBag } from 'lucide-react'
 
 interface PerformanceModalProps {
   isOpen: boolean

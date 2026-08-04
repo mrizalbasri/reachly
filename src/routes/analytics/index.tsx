@@ -11,6 +11,7 @@ import {
   Edit2,
   Award,
   Sparkles,
+  Download,
 } from 'lucide-react'
 import { getAnalyticsOverview } from '../../server/analytics'
 import { getCampaigns } from '../../server/campaigns'
@@ -19,6 +20,7 @@ import { Button } from '../../components/ui/button'
 import { Badge } from '../../components/ui/badge'
 import { PerformanceModal } from '../../components/analytics/performance-modal'
 import { formatFollowers, formatIDR } from '../../utils/formatters'
+import { downloadCSV } from '../../utils/export'
 
 export const Route = createFileRoute('/analytics/')({
   component: AnalyticsPage,
@@ -83,10 +85,39 @@ function AnalyticsPage() {
 
   const rows = data?.rows || []
 
+  const handleExportAnalytics = () => {
+    if (!rows.length) return
+    const headers = [
+      'Nama KOL',
+      'Platform',
+      'Username',
+      'Kampanye',
+      'Budget Teralokasi (IDR)',
+      'Views',
+      'Engagement',
+      'Conversions',
+      'CPM (IDR)',
+      'CPE (IDR)',
+    ]
+    const exportRows = rows.map((r: any) => [
+      r.kolName || '',
+      r.kolPlatform || '',
+      r.kolUsername || '',
+      r.campaignName || '',
+      r.allocatedBudget || '0',
+      r.views || 0,
+      r.engagement || 0,
+      r.conversions || 0,
+      r.cpm || '-',
+      r.cpe || '-',
+    ])
+    downloadCSV(`laporan_analytics_reachly_${new Date().toISOString().slice(0, 10)}.csv`, headers, exportRows)
+  }
+
   return (
     <div className="flex flex-col gap-6">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[#1C1C1E] tracking-tight flex items-center gap-2">
             <BarChart2 className="w-6 h-6 text-[#7C3AED]" />
@@ -98,7 +129,7 @@ function AnalyticsPage() {
         </div>
 
         {/* Filter Controls */}
-        <div className="flex items-center gap-2 bg-white p-1.5 rounded-2xl border border-[#EEEEF0] shadow-xs">
+        <div className="flex items-center gap-2 bg-white p-1.5 rounded-2xl border border-[#EEEEF0] shadow-xs shrink-0">
           <div className="flex items-center gap-1 text-xs text-[#8E8E93] px-2">
             <Filter className="w-3.5 h-3.5" />
             <span>Filter:</span>
@@ -196,14 +227,27 @@ function AnalyticsPage() {
 
       {/* Performance Leaderboard Table */}
       <Card className="overflow-hidden border border-[#EEEEF0] shadow-sm">
-        <div className="p-5 border-b border-[#EEEEF0] flex items-center justify-between">
+        <div className="p-5 border-b border-[#EEEEF0] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Award className="w-5 h-5 text-[#7C3AED]" />
             <h3 className="font-bold text-base text-[#1C1C1E]">Efisiensi & Ranking Performa KOL</h3>
           </div>
-          <span className="text-xs text-[#8E8E93]">
-            {rows.length} Alokasi KOL Terdaftar
-          </span>
+          
+          <div className="flex items-center gap-3">
+            <Button
+              onClick={handleExportAnalytics}
+              variant="outline"
+              size="sm"
+              disabled={rows.length === 0}
+              className="h-8 px-3 text-xs text-[#7C3AED] border-purple-200 hover:bg-purple-50 flex items-center gap-1.5 shadow-xs"
+            >
+              <Download className="w-3.5 h-3.5" />
+              Ekspor Laporan (CSV)
+            </Button>
+            <span className="text-xs text-[#8E8E93] border-l border-[#EEEEF0] pl-3">
+              {rows.length} Alokasi KOL Terdaftar
+            </span>
+          </div>
         </div>
 
         {loading ? (

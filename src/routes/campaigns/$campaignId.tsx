@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { ArrowLeft, Megaphone, Calendar, DollarSign, Users, Plus, Trash2, Edit2, Link2, BarChart2 } from 'lucide-react'
+import { ArrowLeft, Megaphone, Calendar, DollarSign, Users, Plus, Trash2, Edit2, Link2, BarChart2, Download } from 'lucide-react'
 import { getCampaignById, getCampaignKols, allocateKolToCampaign, removeKolFromCampaign } from '../../server/campaigns'
 import { getKols } from '../../server/kol'
 import { Button } from '../../components/ui/button'
@@ -10,6 +10,7 @@ import { Input } from '../../components/ui/input'
 import { Badge } from '../../components/ui/badge'
 import { PerformanceModal } from '../../components/analytics/performance-modal'
 import { formatFollowers, formatIDR } from '../../utils/formatters'
+import { downloadCSV } from '../../utils/export'
 
 export const Route = createFileRoute('/campaigns/$campaignId')({
   component: CampaignDetailPage,
@@ -128,6 +129,22 @@ function CampaignDetailPage() {
   const remaining = Math.max(0, total - allocated)
   const percent = total > 0 ? Math.min(100, Math.round((allocated / total) * 100)) : 0
 
+  const handleExportCampaign = () => {
+    if (!campaignKolsList.length) return
+    const headers = ['Nama KOL', 'Platform', 'Username', 'Followers', 'Rate Card (IDR)', 'Budget Teralokasi (IDR)', 'Status']
+    const exportRows = campaignKolsList.map((k) => [
+      k.kolName || '',
+      k.kolPlatform || '',
+      k.kolUsername || '',
+      k.kolFollowers || 0,
+      k.kolRate || '0',
+      k.allocatedBudget || '0',
+      k.status || 'prospek',
+    ])
+    const cleanName = (campaign.name || 'kampanye').replace(/\s+/g, '_')
+    downloadCSV(`alokasi_kol_${cleanName}_${new Date().toISOString().slice(0, 10)}.csv`, headers, exportRows)
+  }
+
   return (
     <div className="flex flex-col gap-6">
       {/* Back Button & Title */}
@@ -138,10 +155,22 @@ function CampaignDetailPage() {
             Kembali ke Kampanye
           </Button>
         </Link>
-        <Button onClick={() => setIsOpen(true)} size="sm">
-          <Plus className="w-3.5 h-3.5" />
-          Alokasikan KOL Baru
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={handleExportCampaign}
+            variant="outline"
+            size="sm"
+            disabled={campaignKolsList.length === 0}
+            className="text-xs text-[#7C3AED] border-purple-200 hover:bg-purple-50"
+          >
+            <Download className="w-3.5 h-3.5 mr-1" />
+            Ekspor Kampanye (CSV)
+          </Button>
+          <Button onClick={() => setIsOpen(true)} size="sm">
+            <Plus className="w-3.5 h-3.5" />
+            Alokasikan KOL Baru
+          </Button>
+        </div>
       </div>
 
       {/* Main Campaign details */}

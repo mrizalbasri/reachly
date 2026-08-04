@@ -94,7 +94,7 @@ export default function Navbar() {
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#8E8E93]" />
             <input
               type="text"
-              placeholder="Cari KOL atau campaign... (⌘K)"
+              placeholder="Cari KOL atau campaign..."
               className="pl-9 pr-4 py-1.5 text-xs bg-white/80 backdrop-blur-sm border border-[#EEEEF0] rounded-full w-56 focus:outline-none focus:border-[#7C3AED] focus:ring-1 focus:ring-[#7C3AED] transition-all shadow-xs"
             />
           </div>
