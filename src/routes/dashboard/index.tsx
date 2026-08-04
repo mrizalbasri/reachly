@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { LayoutDashboard, Users, Megaphone, DollarSign, Calendar, Clock, ChevronRight } from 'lucide-react'
 import { getDashboardStats } from '../../server/dashboard'
+import { getNotificationAlerts, type NotificationAlert } from '../../server/notifications'
 import { Card } from '../../components/ui/card'
 import { Button } from '../../components/ui/button'
 import { Badge } from '../../components/ui/badge'
@@ -28,9 +29,9 @@ function formatIDR(val: string | number | null | undefined): string {
   }).format(num)
 }
 
-
 function DashboardPage() {
   const [stats, setStats] = useState<any>(null)
+  const [alerts, setAlerts] = useState<NotificationAlert[]>([])
   const [loading, setLoading] = useState(true)
 
   const fetchStats = async () => {
@@ -38,6 +39,8 @@ function DashboardPage() {
     try {
       const data = await getDashboardStats()
       setStats(data)
+      const alertsData = await getNotificationAlerts()
+      setAlerts(alertsData.alerts || [])
     } catch (err) {
       console.error(err)
     } finally {
@@ -190,47 +193,81 @@ function DashboardPage() {
           )}
         </div>
 
-        {/* Right Column: Deadlines (5 Cols) */}
+        {/* Right Column: Deadlines & Stale Alerts (5 Cols) */}
         <div className="lg:col-span-5 flex flex-col gap-4">
-          <h2 className="text-sm font-bold text-[#1C1C1E] uppercase tracking-wider flex items-center gap-1.5">
-            <Clock className="w-4 h-4 text-[#8E8E93]" />
-            Deadline Terdekat
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-bold text-[#1C1C1E] uppercase tracking-wider flex items-center gap-1.5">
+              <Clock className="w-4 h-4 text-[#7C3AED]" />
+              Peringatan & Deadline
+            </h2>
+            {alerts.length > 0 && (
+              <span className="text-[10px] font-semibold bg-purple-100 text-[#7C3AED] px-2 py-0.5 rounded-full">
+                {alerts.length} Perhatian
+              </span>
+            )}
+          </div>
 
-          {stats.soonestDeadlines.length === 0 ? (
+          {alerts.length === 0 && stats.soonestDeadlines.length === 0 ? (
             <Card className="p-8 text-center text-xs text-[#8E8E93]">
               Bagus! Tidak ada tenggat waktu (deadline) negosiasi atau posting dalam waktu dekat.
             </Card>
           ) : (
             <Card className="divide-y divide-[#EEEEF0]/60 p-1">
-              {stats.soonestDeadlines.map((item: any) => {
-                const deadlineDate = new Date(item.deadline)
-                const isOverdue = deadlineDate < new Date()
-
-                return (
-                  <div key={item.id} className="p-3.5 flex items-start justify-between gap-3 text-xs">
-                    <div className="space-y-1">
-                      <div className="font-bold text-[#1C1C1E]">{item.kolName} ({item.kolPlatform})</div>
-                      <div className="text-[10px] text-[#8E8E93]">
-                        Status: <Badge status={item.status} className="px-1.5 py-0 text-[9px] font-medium capitalize">{item.status}</Badge>
-                      </div>
-                      {item.campaignName && (
-                        <div className="text-[10px] text-[#8E8E93]">Proyek: <span className="font-medium text-gray-700">{item.campaignName}</span></div>
-                      )}
+              {alerts.map((alert) => (
+                <Link
+                  key={alert.id}
+                  to={alert.link}
+                  className="p-3.5 flex items-start justify-between gap-3 text-xs hover:bg-purple-50/40 transition-colors block"
+                >
+                  <div className="space-y-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span
+                        className={`w-2 h-2 rounded-full shrink-0 ${
+                          alert.type === 'urgent' ? 'bg-rose-500 animate-ping' : 'bg-amber-500'
+                        }`}
+                      />
+                      <span className="font-bold text-[#1C1C1E] truncate">{alert.title}</span>
                     </div>
-                    
-                    <div className="text-right shrink-0">
-                      <div className={`font-semibold flex items-center gap-1 text-[10px] ${isOverdue ? 'text-rose-500' : 'text-[#7C3AED]'}`}>
-                        <Calendar className="w-3.5 h-3.5" />
-                        {deadlineDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
-                      </div>
-                      <div className="text-[9px] text-[#8E8E93] mt-0.5">
-                        {isOverdue ? 'Terlambat' : 'Mendatang'}
-                      </div>
-                    </div>
+                    <p className="text-[11px] text-[#8E8E93] leading-tight line-clamp-2">
+                      {alert.message}
+                    </p>
                   </div>
-                )
-              })}
+                  <ChevronRight className="w-4 h-4 text-gray-300 shrink-0 self-center" />
+                </Link>
+              ))}
+
+              {alerts.length === 0 &&
+                stats.soonestDeadlines.map((item: any) => {
+                  const deadlineDate = new Date(item.deadline)
+                  const isOverdue = deadlineDate < new Date()
+
+                  return (
+                    <div key={item.id} className="p-3.5 flex items-start justify-between gap-3 text-xs">
+                      <div className="space-y-1">
+                        <div className="font-bold text-[#1C1C1E]">
+                          {item.kolName} ({item.kolPlatform})
+                        </div>
+                        <div className="text-[10px] text-[#8E8E93]">
+                          Status:{' '}
+                          <Badge status={item.status} className="px-1.5 py-0 text-[9px] font-medium capitalize">
+                            {item.status}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      <div className="text-right shrink-0">
+                        <div
+                          className={`font-semibold flex items-center gap-1 text-[10px] ${
+                            isOverdue ? 'text-rose-500' : 'text-[#7C3AED]'
+                          }`}
+                        >
+                          <Calendar className="w-3.5 h-3.5" />
+                          {deadlineDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
             </Card>
           )}
         </div>

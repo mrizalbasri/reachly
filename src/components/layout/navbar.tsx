@@ -2,6 +2,8 @@ import { Link, useLocation } from '@tanstack/react-router'
 import { Search, Users, Kanban, Megaphone, BarChart2, LayoutDashboard } from 'lucide-react'
 import HeaderUser from '../../integrations/clerk/header-user'
 
+import { NotificationBell } from './notification-bell'
+
 export default function Navbar() {
   const location = useLocation()
   const currentPath = location.pathname
@@ -98,6 +100,8 @@ export default function Navbar() {
               className="pl-9 pr-4 py-1.5 text-xs bg-white/80 backdrop-blur-sm border border-[#EEEEF0] rounded-full w-56 focus:outline-none focus:border-[#7C3AED] focus:ring-1 focus:ring-[#7C3AED] transition-all shadow-xs"
             />
           </div>
+
+          <NotificationBell />
 
           <div className="pl-2 border-l border-[#EEEEF0]">
             <HeaderUser />
