@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 
 interface DialogProps {
@@ -9,10 +10,16 @@ interface DialogProps {
 }
 
 export function Dialog({ isOpen, onClose, title, children }: DialogProps) {
-  if (!isOpen) return null
+  const [mounted, setMounted] = useState(false)
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-200">
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!isOpen || !mounted) return null
+
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-white rounded-[20px] shadow-2xl border border-[#EEEEF0] max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 relative">
         <div className="flex items-center justify-between pb-4 mb-4 border-b border-[#EEEEF0]">
           <h3 className="font-bold text-lg text-[#1C1C1E]">{title}</h3>
@@ -25,6 +32,7 @@ export function Dialog({ isOpen, onClose, title, children }: DialogProps) {
         </div>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
