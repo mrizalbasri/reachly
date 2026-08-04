@@ -1,3 +1,39 @@
+# Reachly — Agent Guidelines & Codebase Map
+
+> 📌 **Vault Hub:** [Index](file:///d:/Coding/reachly/docs/Index.md) | [PRD](file:///d:/Coding/reachly/docs/Prd.md) | [Architecture](file:///d:/Coding/reachly/docs/Architecture.md) | [Design System](file:///d:/Coding/reachly/docs/Design.md)
+
+---
+
+## 🗺️ 1. Project Navigation Map
+
+AI Agents MUST read the relevant documentation in `docs/` before implementing new features or making architectural changes:
+
+| Target Area | File Location | Purpose |
+| --- | --- | --- |
+| **Vault Hub** | [`docs/Index.md`](file:///d:/Coding/reachly/docs/Index.md) | Central navigation hub & obsidian vault structure |
+| **Product Specs (PRD)** | [`docs/Prd.md`](file:///d:/Coding/reachly/docs/Prd.md) | Product scope, roadmap (Fase 1-3), user personas, & feature details |
+| **Architecture** | [`docs/Architecture.md`](file:///d:/Coding/reachly/docs/Architecture.md) | Tech stack (TanStack Start, Drizzle, Clerk), folder structure, & DB schema |
+| **Design System** | [`docs/Design.md`](file:///d:/Coding/reachly/docs/Design.md) | iOS/macOS clean design philosophy, color tokens, typography, & UI components |
+
+---
+
+## ⚡ 2. Context Optimization & CodeGraph Usage Rules
+
+To minimize token usage and avoid reading unnecessary files:
+
+1. **Use CodeGraph First (`codegraph_explore`)**:
+   - BEFORE doing broad `grep` searches or reading full source files, ALWAYS reach for `codegraph_explore`.
+   - Pass targeted queries (e.g. `codegraph_explore(query: "campaignKols", projectPath: "d:\\Coding\\reachly")`).
+   - `codegraph_explore` returns exact line-numbered source code AND caller relationships in a single token-efficient call. Do NOT re-read files shown in CodeGraph output.
+
+2. **Respect `codegraph.json` Exclusion**:
+   - Non-code noise such as `docs/.obsidian/`, `dist/`, `.tanstack/`, and `public/` are excluded in `codegraph.json` to keep index fast and lean.
+
+3. **Database Schema Reference**:
+   - Database tables are defined in [`src/db/schema.ts`](file:///d:/Coding/reachly/src/db/schema.ts).
+
+---
+
 <!-- intent-skills:start -->
 # TanStack Intent - before editing files, run the matching guidance command.
 tanstackIntent:

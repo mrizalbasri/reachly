@@ -38,42 +38,20 @@ export const upsertPerformanceRecord = createServerFn({ method: 'POST' })
       // CPV = Budget / Views
       const cpv = views > 0 ? (budget / views).toFixed(2) : null
 
+      const payload = { views, engagement, conversions, cpm, cpe, cpv }
+
       // 2. Check if a record already exists for this campaignKolId
       const [existing] = await db
-        .select()
+        .select({ id: performanceRecords.id })
         .from(performanceRecords)
         .where(eq(performanceRecords.campaignKolId, data.campaignKolId))
         .limit(1)
 
-      if (existing) {
-        const [updated] = await db
-          .update(performanceRecords)
-          .set({
-            views,
-            engagement,
-            conversions,
-            cpm,
-            cpe,
-            cpv,
-          })
-          .where(eq(performanceRecords.id, existing.id))
-          .returning()
-        return updated
-      } else {
-        const [inserted] = await db
-          .insert(performanceRecords)
-          .values({
-            campaignKolId: data.campaignKolId,
-            views,
-            engagement,
-            conversions,
-            cpm,
-            cpe,
-            cpv,
-          })
-          .returning()
-        return inserted
-      }
+      const [result] = existing
+        ? await db.update(performanceRecords).set(payload).where(eq(performanceRecords.id, existing.id)).returning()
+        : await db.insert(performanceRecords).values({ campaignKolId: data.campaignKolId, ...payload }).returning()
+
+      return result
     } catch (err) {
       console.error('Error updating performance record:', err)
       throw new Error('Gagal menyimpan data performa')

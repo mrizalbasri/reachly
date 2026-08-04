@@ -16,13 +16,11 @@ export default function Navbar() {
       label: 'Direktori KOL',
       path: '/kol-directory',
       icon: Users,
-      badge: 'MVP',
     },
     {
       label: 'Pipeline Proyek',
       path: '/pipeline',
       icon: Kanban,
-      badge: 'MVP',
     },
     {
       label: 'Kampanye',
@@ -33,7 +31,6 @@ export default function Navbar() {
       label: 'Analisis ROI',
       path: '/analytics',
       icon: BarChart2,
-      disabled: true,
     },
   ]
 
@@ -41,18 +38,15 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 glass-header px-6 py-3 transition-all">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
         {/* Brand Logo */}
-        <Link to="/kol-directory" className="flex items-center gap-2.5 group">
+        <Link to="/dashboard" className="flex items-center gap-2.5 group">
           <img
             src="/logo.webp"
             alt="Reachly Logo"
             className="w-10 h-10 rounded-xl shadow-sm transition-transform group-hover:scale-105 object-contain"
           />
           <div className="flex flex-col">
-            <span className="font-bold text-xl tracking-tight text-[#1C1C1E] flex items-center gap-1.5">
+            <span className="font-bold text-xl tracking-tight text-[#1C1C1E]">
               Reachly
-              <span className="text-[10px] uppercase font-bold tracking-widest bg-purple-100 text-[#7C3AED] px-1.5 py-0.5 rounded-full">
-                MVP
-              </span>
             </span>
           </div>
         </Link>

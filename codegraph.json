@@ -1,0 +1,8 @@
+{
+  "exclude": [
+    "docs/.obsidian/**",
+    "dist/**",
+    ".tanstack/**",
+    "public/**"
+  ]
+}
