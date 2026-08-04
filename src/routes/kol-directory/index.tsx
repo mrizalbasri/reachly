@@ -8,6 +8,7 @@ import { Button } from '../../components/ui/button'
 import { Card } from '../../components/ui/card'
 import { Dialog } from '../../components/ui/dialog'
 import { KolForm } from '../../components/kol/kol-form'
+import { CustomSelect } from '../../components/ui/custom-select'
 import { formatFollowers, formatIDR } from '../../utils/formatters'
 import { downloadCSV } from '../../utils/export'
 
@@ -136,37 +137,39 @@ function KolDirectoryPage() {
 
           <div className="flex flex-col gap-2">
             <label className="text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">Platform</label>
-            <select
+            <CustomSelect
               value={platform}
-              onChange={(e) => setPlatform(e.target.value)}
-              className="w-full px-3 py-2 text-xs bg-white/90 border border-[#EEEEF0] rounded-xl text-[#1C1C1E] focus:outline-none focus:border-[#7C3AED]"
-            >
-              <option value="all">Semua Platform</option>
-              <option value="Instagram">Instagram</option>
-              <option value="TikTok">TikTok</option>
-              <option value="YouTube">YouTube</option>
-              <option value="Twitter">Twitter / X</option>
-            </select>
+              onChange={setPlatform}
+              className="w-full"
+              options={[
+                { value: 'all', label: 'Semua Platform' },
+                { value: 'Instagram', label: 'Instagram' },
+                { value: 'TikTok', label: 'TikTok' },
+                { value: 'YouTube', label: 'YouTube' },
+                { value: 'Twitter', label: 'Twitter / X' },
+              ]}
+            />
           </div>
 
           <div className="flex flex-col gap-2">
             <label className="text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">Niche</label>
-            <select
+            <CustomSelect
               value={niche}
-              onChange={(e) => setNiche(e.target.value)}
-              className="w-full px-3 py-2 text-xs bg-white/90 border border-[#EEEEF0] rounded-xl text-[#1C1C1E] focus:outline-none focus:border-[#7C3AED]"
-            >
-              <option value="all">Semua Niche</option>
-              <option value="Beauty">Beauty & Skincare</option>
-              <option value="Fashion">Fashion & Style</option>
-              <option value="Culinary">Food & Culinary</option>
-              <option value="Tech">Tech & Gadgets</option>
-              <option value="Gaming">Gaming</option>
-              <option value="Fitness">Fitness & Health</option>
-              <option value="Lifestyle">Travel & Lifestyle</option>
-              <option value="Parenting">Parenting</option>
-              <option value="Finance">Finance & Business</option>
-            </select>
+              onChange={setNiche}
+              className="w-full"
+              options={[
+                { value: 'all', label: 'Semua Niche' },
+                { value: 'Beauty', label: 'Beauty & Skincare' },
+                { value: 'Fashion', label: 'Fashion & Style' },
+                { value: 'Culinary', label: 'Food & Culinary' },
+                { value: 'Tech', label: 'Tech & Gadgets' },
+                { value: 'Gaming', label: 'Gaming' },
+                { value: 'Fitness', label: 'Fitness & Health' },
+                { value: 'Lifestyle', label: 'Travel & Lifestyle' },
+                { value: 'Parenting', label: 'Parenting' },
+                { value: 'Finance', label: 'Finance & Business' },
+              ]}
+            />
           </div>
 
           <div className="pt-3 border-t border-[#EEEEF0]/80">

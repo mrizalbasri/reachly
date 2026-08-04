@@ -19,6 +19,7 @@ import { Card } from '../../components/ui/card'
 import { Button } from '../../components/ui/button'
 import { Badge } from '../../components/ui/badge'
 import { PerformanceModal } from '../../components/analytics/performance-modal'
+import { CustomSelect } from '../../components/ui/custom-select'
 import { formatFollowers, formatIDR } from '../../utils/formatters'
 import { downloadCSV } from '../../utils/export'
 
@@ -129,36 +130,32 @@ function AnalyticsPage() {
         </div>
 
         {/* Filter Controls */}
-        <div className="flex items-center gap-2 bg-white p-1.5 rounded-2xl border border-[#EEEEF0] shadow-xs shrink-0">
-          <div className="flex items-center gap-1 text-xs text-[#8E8E93] px-2">
-            <Filter className="w-3.5 h-3.5" />
+        <div className="flex items-center gap-2.5 bg-white p-1.5 rounded-2xl border border-[#EEEEF0] shadow-xs shrink-0">
+          <div className="flex items-center gap-1.5 text-xs text-[#8E8E93] pl-2 font-medium">
+            <Filter className="w-3.5 h-3.5 text-[#7C3AED]" />
             <span>Filter:</span>
           </div>
 
-          <select
+          <CustomSelect
             value={selectedCampaign}
-            onChange={(e) => setSelectedCampaign(e.target.value)}
-            className="text-xs py-1.5 px-3 rounded-xl border border-gray-200 bg-[#FBFBFC] text-[#1C1C1E] font-medium focus:outline-none focus:border-[#7C3AED]"
-          >
-            <option value="all">Semua Kampanye</option>
-            {campaignList.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
+            onChange={setSelectedCampaign}
+            options={[
+              { value: 'all', label: 'Semua Kampanye' },
+              ...campaignList.map((c) => ({ value: c.id, label: c.name })),
+            ]}
+          />
 
-          <select
+          <CustomSelect
             value={selectedPlatform}
-            onChange={(e) => setSelectedPlatform(e.target.value)}
-            className="text-xs py-1.5 px-3 rounded-xl border border-gray-200 bg-[#FBFBFC] text-[#1C1C1E] font-medium focus:outline-none focus:border-[#7C3AED]"
-          >
-            <option value="all">Semua Platform</option>
-            <option value="Instagram">Instagram</option>
-            <option value="TikTok">TikTok</option>
-            <option value="YouTube">YouTube</option>
-            <option value="Twitter">Twitter</option>
-          </select>
+            onChange={setSelectedPlatform}
+            options={[
+              { value: 'all', label: 'Semua Platform' },
+              { value: 'Instagram', label: 'Instagram' },
+              { value: 'TikTok', label: 'TikTok' },
+              { value: 'YouTube', label: 'YouTube' },
+              { value: 'Twitter', label: 'Twitter' },
+            ]}
+          />
         </div>
       </div>
 
