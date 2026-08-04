@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as SignUpRouteImport } from './routes/sign-up'
+import { Route as AnalyticsIndexRouteImport } from './routes/analytics/index'
 import { Route as CampaignsIndexRouteImport } from './routes/campaigns/index'
 import { Route as CampaignsCampaignIdRouteImport } from './routes/campaigns/$campaignId'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
@@ -32,6 +33,11 @@ const SignInRoute = SignInRouteImport.update({
 const SignUpRoute = SignUpRouteImport.update({
   id: '/sign-up',
   path: '/sign-up',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnalyticsIndexRoute = AnalyticsIndexRouteImport.update({
+  id: '/analytics/',
+  path: '/analytics/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CampaignsIndexRoute = CampaignsIndexRouteImport.update({
@@ -71,6 +77,7 @@ export interface FileRoutesByFullPath {
   '/sign-up': typeof SignUpRoute
   '/campaigns/$campaignId': typeof CampaignsCampaignIdRoute
   '/kol-directory/$kolId': typeof KolDirectoryKolIdRoute
+  '/analytics/': typeof AnalyticsIndexRoute
   '/campaigns/': typeof CampaignsIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/kol-directory/': typeof KolDirectoryIndexRoute
@@ -82,6 +89,7 @@ export interface FileRoutesByTo {
   '/sign-up': typeof SignUpRoute
   '/campaigns/$campaignId': typeof CampaignsCampaignIdRoute
   '/kol-directory/$kolId': typeof KolDirectoryKolIdRoute
+  '/analytics': typeof AnalyticsIndexRoute
   '/campaigns': typeof CampaignsIndexRoute
   '/dashboard': typeof DashboardIndexRoute
   '/kol-directory': typeof KolDirectoryIndexRoute
@@ -94,6 +102,7 @@ export interface FileRoutesById {
   '/sign-up': typeof SignUpRoute
   '/campaigns/$campaignId': typeof CampaignsCampaignIdRoute
   '/kol-directory/$kolId': typeof KolDirectoryKolIdRoute
+  '/analytics/': typeof AnalyticsIndexRoute
   '/campaigns/': typeof CampaignsIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/kol-directory/': typeof KolDirectoryIndexRoute
@@ -107,6 +116,7 @@ export interface FileRouteTypes {
     | '/sign-up'
     | '/campaigns/$campaignId'
     | '/kol-directory/$kolId'
+    | '/analytics/'
     | '/campaigns/'
     | '/dashboard/'
     | '/kol-directory/'
@@ -118,6 +128,7 @@ export interface FileRouteTypes {
     | '/sign-up'
     | '/campaigns/$campaignId'
     | '/kol-directory/$kolId'
+    | '/analytics'
     | '/campaigns'
     | '/dashboard'
     | '/kol-directory'
@@ -129,6 +140,7 @@ export interface FileRouteTypes {
     | '/sign-up'
     | '/campaigns/$campaignId'
     | '/kol-directory/$kolId'
+    | '/analytics/'
     | '/campaigns/'
     | '/dashboard/'
     | '/kol-directory/'
@@ -141,6 +153,7 @@ export interface RootRouteChildren {
   SignUpRoute: typeof SignUpRoute
   CampaignsCampaignIdRoute: typeof CampaignsCampaignIdRoute
   KolDirectoryKolIdRoute: typeof KolDirectoryKolIdRoute
+  AnalyticsIndexRoute: typeof AnalyticsIndexRoute
   CampaignsIndexRoute: typeof CampaignsIndexRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
   KolDirectoryIndexRoute: typeof KolDirectoryIndexRoute
@@ -168,6 +181,13 @@ declare module '@tanstack/react-router' {
       path: '/sign-up'
       fullPath: '/sign-up'
       preLoaderRoute: typeof SignUpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/analytics/': {
+      id: '/analytics/'
+      path: '/analytics'
+      fullPath: '/analytics/'
+      preLoaderRoute: typeof AnalyticsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/campaigns/': {
@@ -221,6 +241,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignUpRoute: SignUpRoute,
   CampaignsCampaignIdRoute: CampaignsCampaignIdRoute,
   KolDirectoryKolIdRoute: KolDirectoryKolIdRoute,
+  AnalyticsIndexRoute: AnalyticsIndexRoute,
   CampaignsIndexRoute: CampaignsIndexRoute,
   DashboardIndexRoute: DashboardIndexRoute,
   KolDirectoryIndexRoute: KolDirectoryIndexRoute,

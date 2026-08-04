@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { ArrowLeft, Megaphone, Calendar, DollarSign, Users, Plus, Trash2, Edit2, Link2 } from 'lucide-react'
+import { ArrowLeft, Megaphone, Calendar, DollarSign, Users, Plus, Trash2, Edit2, Link2, BarChart2 } from 'lucide-react'
 import { getCampaignById, getCampaignKols, allocateKolToCampaign, removeKolFromCampaign } from '../../server/campaigns'
 import { getKols } from '../../server/kol'
 import { Button } from '../../components/ui/button'
@@ -8,6 +8,7 @@ import { Card } from '../../components/ui/card'
 import { Dialog } from '../../components/ui/dialog'
 import { Input } from '../../components/ui/input'
 import { Badge } from '../../components/ui/badge'
+import { PerformanceModal } from '../../components/analytics/performance-modal'
 
 export const Route = createFileRoute('/campaigns/$campaignId')({
   component: CampaignDetailPage,
@@ -40,10 +41,26 @@ function CampaignDetailPage() {
   const [availableKols, setAvailableKols] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   
-  // Modal State
+  // Modal State Alokasi
   const [isOpen, setIsOpen] = useState(false)
   const [selectedKolId, setSelectedKolId] = useState('')
   const [allocatedBudget, setAllocatedBudget] = useState('')
+
+  // Modal State Performa
+  const [isPerfModalOpen, setIsPerfModalOpen] = useState(false)
+  const [perfItem, setPerfItem] = useState<any>(null)
+
+  const handleOpenPerfModal = (kol: any) => {
+    setPerfItem({
+      campaignKolId: kol.id,
+      kolName: kol.kolName,
+      campaignName: campaign?.name,
+      views: kol.views,
+      engagement: kol.engagement,
+      conversions: kol.conversions,
+    })
+    setIsPerfModalOpen(true)
+  }
 
   const loadData = async () => {
     setLoading(true)
@@ -252,15 +269,27 @@ function CampaignDetailPage() {
                       <Badge status={kol.status} className="capitalize py-0.5 px-2">{kol.status}</Badge>
                     </td>
                     <td className="py-3.5 px-4 text-right">
-                      <Button
-                        size="icon"
-                        variant="outline"
-                        onClick={() => handleDeallocate(kol.kolId)}
-                        className="w-7 h-7 hover:text-rose-500 hover:border-rose-100"
-                        title="Hapus Alokasi"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
+                      <div className="flex items-center justify-end gap-1.5">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleOpenPerfModal(kol)}
+                          className="h-7 px-2 text-[11px] text-[#7C3AED] hover:bg-purple-50 hover:border-[#7C3AED]/30"
+                          title="Input Performa"
+                        >
+                          <BarChart2 className="w-3.5 h-3.5 mr-1" />
+                          Performa
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          onClick={() => handleDeallocate(kol.kolId)}
+                          className="w-7 h-7 hover:text-rose-500 hover:border-rose-100"
+                          title="Hapus Alokasi"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -312,6 +341,14 @@ function CampaignDetailPage() {
           </div>
         </form>
       </Dialog>
+
+      {/* Dialog Input Performa */}
+      <PerformanceModal
+        isOpen={isPerfModalOpen}
+        onClose={() => setIsPerfModalOpen(false)}
+        onSuccess={loadData}
+        item={perfItem}
+      />
     </div>
   )
 }
