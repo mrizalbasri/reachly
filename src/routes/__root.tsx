@@ -1,4 +1,4 @@
-import { HeadContent, Outlet, Scripts, createRootRoute } from '@tanstack/react-router'
+import { HeadContent, Outlet, Scripts, createRootRoute, useLocation } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 
@@ -40,6 +40,8 @@ export const Route = createRootRoute({
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  const location = useLocation()
+
   return (
     <html lang="id">
       <head>
@@ -49,7 +51,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <ClerkProvider>
           <Navbar />
           <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 lg:p-8">
-            {children || <Outlet />}
+            <div key={location.pathname} className="page-transition">
+              {children || <Outlet />}
+            </div>
           </main>
           <TanStackDevtools
             config={{

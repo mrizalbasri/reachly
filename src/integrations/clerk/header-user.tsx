@@ -23,7 +23,7 @@ export default function HeaderUser() {
           </Link>
           <Link
             to="/sign-up"
-            className="px-4 py-1.5 text-xs font-medium bg-[#7C3AED] hover:bg-[#6D28D9] text-white rounded-full shadow-sm transition-all focus:outline-none"
+            className="px-4 py-1.5 text-xs font-bold glass-btn-primary text-white rounded-full transition-all focus:outline-none transform hover:scale-105"
           >
             Daftar
           </Link>

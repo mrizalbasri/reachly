@@ -1,0 +1,33 @@
+# ==================================================
+# SIGAP — Conventional Commit Template
+# ==================================================
+# Format: <type>(<scope>): <pesan singkat>
+#
+# TYPE (pilih salah satu):
+#   feat     → Fitur baru
+#   fix      → Bug fix
+#   chore    → Setup, config, dependency
+#   docs     → Update dokumentasi / README
+#   refactor → Refactor kode tanpa fitur baru
+#   style    → Perubahan UI/CSS tanpa logika
+#   test     → Tambah atau update test
+#
+# SCOPE (pilih sesuai folder yang diubah):
+#   backend  → Perubahan di folder /backend
+#   frontend → Perubahan di folder /frontend
+#   app      → Perubahan di folder /app (Flutter)
+#   (kosong) → Perubahan di root / lebih dari 1 folder
+#
+# CONTOH:
+#   feat(backend): tambah endpoint GET /api/trucks
+#   fix(frontend): perbaiki navbar tidak responsive
+#   chore(app): update pubspec.yaml dependencies
+#   docs: update README overview SIGAP
+#
+# ATURAN:
+#   - Pesan singkat maks 72 karakter
+#   - Gunakan bahasa Indonesia atau Inggris (konsisten)
+#   - Jangan pakai titik di akhir pesan
+# ==================================================
+
+

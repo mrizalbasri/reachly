@@ -47,8 +47,8 @@ export default function Navbar() {
             className="w-10 h-10 rounded-xl shadow-sm transition-transform group-hover:scale-105 object-contain"
           />
           <div className="flex flex-col">
-            <span className="font-bold text-xl tracking-tight text-[#1C1C1E]">
-              Reachly
+            <span className="font-extrabold text-xl tracking-tight text-[#1C1C1E]">
+              Reach<span className="bg-gradient-to-r from-[#7C3AED] to-[#EC4899] bg-clip-text text-transparent">ly</span>
             </span>
           </div>
         </Link>
@@ -79,7 +79,7 @@ export default function Navbar() {
                 to={item.path}
                 className={`flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-full transition-all duration-150 ${
                   isActive
-                    ? 'bg-[#7C3AED] text-white shadow-sm font-semibold'
+                    ? 'bg-gradient-to-r from-[#EC4899] via-[#8B5CF6] to-[#7C3AED] text-white font-bold shadow-xs'
                     : 'text-[#8E8E93] hover:text-[#1C1C1E] hover:bg-white/80'
                 }`}
               >
