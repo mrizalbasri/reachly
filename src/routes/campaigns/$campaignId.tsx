@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { ArrowLeft, Megaphone, Calendar, DollarSign, Users, Plus, Trash2, Edit2, Link2, BarChart2, Download } from 'lucide-react'
+import { ArrowLeft, Megaphone, Calendar, DollarSign, Users, Plus, Trash2, Edit2, Link2, BarChart2, Download, Printer } from 'lucide-react'
 import { getCampaignById, getCampaignKols, allocateKolToCampaign, removeKolFromCampaign } from '../../server/campaigns'
 import { getKols } from '../../server/kol'
 import { Button } from '../../components/ui/button'
@@ -10,13 +10,15 @@ import { Input } from '../../components/ui/input'
 import { Badge } from '../../components/ui/badge'
 import { PerformanceModal } from '../../components/analytics/performance-modal'
 import { formatFollowers, formatIDR } from '../../utils/formatters'
-import { downloadCSV } from '../../utils/export'
+import { downloadCSV, printPDFReport } from '../../utils/export'
+import { useToast } from '../../components/ui/toast'
 
 export const Route = createFileRoute('/campaigns/$campaignId')({
   component: CampaignDetailPage,
 })
 
 function CampaignDetailPage() {
+  const toast = useToast()
   const { campaignId } = Route.useParams()
   const navigate = useNavigate()
   
@@ -62,6 +64,7 @@ function CampaignDetailPage() {
       }
     } catch (err) {
       console.error(err)
+      toast.error('Gagal Memuat Kampanye', 'Terjadi kesalahan saat memuat detail kampanye.')
     } finally {
       setLoading(false)
     }
@@ -73,7 +76,10 @@ function CampaignDetailPage() {
 
   const handleAllocate = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!selectedKolId) return
+    if (!selectedKolId) {
+      toast.warning('Pilih KOL', 'Silakan pilih KOL yang akan dialokasikan.')
+      return
+    }
 
     try {
       await allocateKolToCampaign({
@@ -83,11 +89,13 @@ function CampaignDetailPage() {
           allocatedBudget: allocatedBudget || '0',
         },
       })
+      toast.success('KOL Dialokasikan', 'Berhasil mengalokasikan KOL ke kampanye ini.')
       setAllocatedBudget('')
       setIsOpen(false)
       loadData()
     } catch (err) {
       console.error(err)
+      toast.error('Gagal Mengalokasikan', 'Terjadi kesalahan saat mengalokasikan KOL.')
     }
   }
 
@@ -100,9 +108,11 @@ function CampaignDetailPage() {
           kolId,
         },
       })
+      toast.info('Alokasi Dihapus', 'KOL telah dihapus dari kampanye ini.')
       loadData()
     } catch (err) {
       console.error(err)
+      toast.error('Gagal Menghapus', 'Tidak dapat menghapus KOL dari kampanye.')
     }
   }
 
@@ -143,6 +153,37 @@ function CampaignDetailPage() {
     ])
     const cleanName = (campaign.name || 'kampanye').replace(/\s+/g, '_')
     downloadCSV(`alokasi_kol_${cleanName}_${new Date().toISOString().slice(0, 10)}.csv`, headers, exportRows)
+    toast.success('Ekspor CSV Berhasil', 'File CSV alokasi KOL telah diunduh.')
+  }
+
+  const handleExportCampaignPDF = () => {
+    if (!campaignKolsList.length) return
+    const headers = ['Nama KOL', 'Platform', 'Username', 'Followers', 'Rate Card', 'Budget Alokasi', 'Status']
+    const exportRows = campaignKolsList.map((k) => [
+      k.kolName || '',
+      k.kolPlatform || '',
+      k.kolUsername ? `@${k.kolUsername}` : '-',
+      formatFollowers(k.kolFollowers),
+      formatIDR(k.kolRate || 0),
+      formatIDR(k.allocatedBudget || 0),
+      k.status || 'prospek',
+    ])
+
+    const summaryCards = [
+      { label: 'Total Budget Kampanye', value: formatIDR(total) },
+      { label: 'Total Budget Dialokasikan', value: formatIDR(allocated) },
+      { label: 'Sisa Budget Kampanye', value: formatIDR(remaining) },
+      { label: 'Jumlah KOL Terlibat', value: campaignKolsList.length },
+    ]
+
+    printPDFReport(
+      `Laporan Alokasi Kampanye — ${campaign.name}`,
+      `Detail alokasi budget dan status kerja sama KOL`,
+      headers,
+      exportRows,
+      summaryCards
+    )
+    toast.info('Menyiapkan Cetak PDF', 'Jendela laporan cetak/PDF telah dibuka.')
   }
 
   return (
@@ -155,7 +196,7 @@ function CampaignDetailPage() {
             Kembali ke Kampanye
           </Button>
         </Link>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Button
             onClick={handleExportCampaign}
             variant="outline"
@@ -164,7 +205,17 @@ function CampaignDetailPage() {
             className="text-xs text-[#7C3AED] border-purple-200 hover:bg-purple-50"
           >
             <Download className="w-3.5 h-3.5 mr-1" />
-            Ekspor Kampanye (CSV)
+            CSV
+          </Button>
+          <Button
+            onClick={handleExportCampaignPDF}
+            variant="outline"
+            size="sm"
+            disabled={campaignKolsList.length === 0}
+            className="text-xs text-indigo-700 bg-indigo-50/50 border-indigo-200 hover:bg-indigo-100/70 font-medium"
+          >
+            <Printer className="w-3.5 h-3.5 mr-1" />
+            Cetak PDF
           </Button>
           <Button onClick={() => setIsOpen(true)} size="sm">
             <Plus className="w-3.5 h-3.5" />
@@ -172,6 +223,7 @@ function CampaignDetailPage() {
           </Button>
         </div>
       </div>
+
 
       {/* Main Campaign details */}
       <Card className="p-6">

@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Button } from '../ui/button'
 import { Input, Select } from '../ui/input'
 import { createKol, type CreateKolInput } from '../../server/kol'
+import { useToast } from '../ui/toast'
 
 interface KolFormProps {
   onSuccess: () => void
@@ -9,6 +10,7 @@ interface KolFormProps {
 }
 
 export function KolForm({ onSuccess, onCancel }: KolFormProps) {
+  const toast = useToast()
   const [formData, setFormData] = useState<CreateKolInput>({
     name: '',
     platform: 'Instagram',
@@ -33,8 +35,9 @@ export function KolForm({ onSuccess, onCancel }: KolFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!formData.name) {
+    if (!formData.name.trim()) {
       setError('Nama KOL wajib diisi')
+      toast.warning('Validasi Form', 'Nama KOL wajib diisi.')
       return
     }
 
@@ -42,13 +45,17 @@ export function KolForm({ onSuccess, onCancel }: KolFormProps) {
       setLoading(true)
       setError('')
       await createKol({ data: formData })
+      toast.success('KOL Ditambahkan', `${formData.name} berhasil ditambahkan ke direktori.`)
       onSuccess()
     } catch (err: any) {
-      setError(err.message || 'Gagal menambahkan KOL')
+      const msg = err.message || 'Gagal menambahkan KOL'
+      setError(msg)
+      toast.error('Gagal Menyimpan', msg)
     } finally {
       setLoading(false)
     }
   }
+
 
   const platformOptions = [
     { label: 'Instagram', value: 'Instagram' },

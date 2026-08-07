@@ -4,6 +4,7 @@ import { TanStackDevtools } from '@tanstack/react-devtools'
 
 import ClerkProvider from '../integrations/clerk/provider'
 import Navbar from '../components/layout/navbar'
+import { ToastProvider } from '../components/ui/toast'
 
 import appCss from '../styles.css?url'
 
@@ -48,27 +49,30 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body className="bg-[#FFFFFF] text-[#1C1C1E] min-h-screen flex flex-col antialiased">
-        <ClerkProvider>
-          <Navbar />
-          <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 lg:p-8">
-            <div key={location.pathname} className="page-transition">
-              {children || <Outlet />}
-            </div>
-          </main>
-          <TanStackDevtools
-            config={{
-              position: 'bottom-right',
-            }}
-            plugins={[
-              {
-                name: 'Tanstack Router',
-                render: <TanStackRouterDevtoolsPanel />,
-              },
-            ]}
-          />
-        </ClerkProvider>
+        <ToastProvider>
+          <ClerkProvider>
+            <Navbar />
+            <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 lg:p-8">
+              <div key={location.pathname} className="page-transition">
+                {children || <Outlet />}
+              </div>
+            </main>
+            <TanStackDevtools
+              config={{
+                position: 'bottom-right',
+              }}
+              plugins={[
+                {
+                  name: 'Tanstack Router',
+                  render: <TanStackRouterDevtoolsPanel />,
+                },
+              ]}
+            />
+          </ClerkProvider>
+        </ToastProvider>
         <Scripts />
       </body>
     </html>
   )
 }
+

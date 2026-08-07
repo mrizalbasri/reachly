@@ -3,6 +3,7 @@ import { Dialog } from '../ui/dialog'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { upsertPerformanceRecord } from '../../server/analytics'
+import { useToast } from '../ui/toast'
 import { Eye, ThumbsUp, ShoppingBag } from 'lucide-react'
 
 interface PerformanceModalProps {
@@ -20,6 +21,7 @@ interface PerformanceModalProps {
 }
 
 export function PerformanceModal({ isOpen, onClose, onSuccess, item }: PerformanceModalProps) {
+  const toast = useToast()
   const [views, setViews] = useState('')
   const [engagement, setEngagement] = useState('')
   const [conversions, setConversions] = useState('')
@@ -56,15 +58,19 @@ export function PerformanceModal({ isOpen, onClose, onSuccess, item }: Performan
         },
       })
 
+      toast.success('Performa Diperbarui', `Data performa untuk ${item.kolName} berhasil disimpan.`)
       if (onSuccess) onSuccess()
       onClose()
     } catch (err: any) {
       console.error(err)
-      setError(err?.message || 'Gagal menyimpan data performa')
+      const msg = err?.message || 'Gagal menyimpan data performa'
+      setError(msg)
+      toast.error('Gagal Menyimpan', msg)
     } finally {
       setLoading(false)
     }
   }
+
 
   if (!item) return null
 

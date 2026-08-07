@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { Plus, Search, Users, Eye, Kanban, Trash2, CheckCircle2, Download } from 'lucide-react'
+import { Plus, Search, Users, Eye, Kanban, Trash2, CheckCircle2, Download, Printer } from 'lucide-react'
 
 import { getKols, deleteKol } from '../../server/kol'
 import { createPipelineEntry } from '../../server/pipeline'
@@ -10,7 +10,8 @@ import { Dialog } from '../../components/ui/dialog'
 import { KolForm } from '../../components/kol/kol-form'
 import { CustomSelect } from '../../components/ui/custom-select'
 import { formatFollowers, formatIDR } from '../../utils/formatters'
-import { downloadCSV } from '../../utils/export'
+import { downloadCSV, printPDFReport } from '../../utils/export'
+import { useToast } from '../../components/ui/toast'
 
 export const Route = createFileRoute('/kol-directory/')({
   component: KolDirectoryPage,
@@ -29,6 +30,7 @@ function getAvatarBg(name: string): string {
 }
 
 function KolDirectoryPage() {
+  const toast = useToast()
   const [kolsList, setKolsList] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -44,6 +46,7 @@ function KolDirectoryPage() {
       setKolsList(data)
     } catch (err) {
       console.error(err)
+      toast.error('Gagal Memuat KOL', 'Terjadi kesalahan saat memuat direktori KOL.')
     } finally {
       setLoading(false)
     }
@@ -53,23 +56,27 @@ function KolDirectoryPage() {
     fetchKols()
   }, [search, niche, platform])
 
-  const handleAddToPipeline = async (kolId: string) => {
+  const handleAddToPipeline = async (kolId: string, kolName: string) => {
     try {
       await createPipelineEntry({ data: { kolId, status: 'prospek' } })
       setAddedPipelineId(kolId)
+      toast.success('Masuk Pipeline', `${kolName} berhasil dimasukkan ke Pipeline Prospek.`)
       setTimeout(() => setAddedPipelineId(null), 2500)
     } catch (err) {
       console.error(err)
+      toast.error('Gagal', 'Terjadi kesalahan saat menambahkan KOL ke pipeline.')
     }
   }
 
-  const handleDeleteKol = async (kolId: string) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus data KOL ini?')) return
+  const handleDeleteKol = async (kolId: string, kolName: string) => {
+    if (!confirm(`Apakah Anda yakin ingin menghapus data KOL ${kolName}?`)) return
     try {
       await deleteKol({ data: kolId })
+      toast.info('KOL Dihapus', `Data ${kolName} telah dihapus dari direktori.`)
       fetchKols()
     } catch (err) {
       console.error(err)
+      toast.error('Gagal Menghapus', 'Tidak dapat menghapus data KOL.')
     }
   }
 
@@ -88,6 +95,37 @@ function KolDirectoryPage() {
       k.notes || '',
     ])
     downloadCSV(`direktori_kol_reachly_${new Date().toISOString().slice(0, 10)}.csv`, headers, exportRows)
+    toast.success('Ekspor CSV Berhasil', 'File CSV direktori KOL telah diunduh.')
+  }
+
+  const handleExportKolsPDF = () => {
+    if (!kolsList.length) return
+    const headers = ['Nama KOL', 'Platform', 'Username', 'Niche', 'Followers', 'Engagement Rate', 'Rate Card (IDR)', 'Kontak']
+    const exportRows = kolsList.map((k) => [
+      k.name || '',
+      k.platform || '',
+      k.username ? `@${k.username}` : '-',
+      k.niche || 'General',
+      formatFollowers(k.followers),
+      k.engagementRate ? `${k.engagementRate}%` : '-',
+      formatIDR(k.ratePerPost || 0),
+      k.contact || '-',
+    ])
+
+    const summaryCards = [
+      { label: 'Total KOL Terdaftar', value: kolsList.length },
+      { label: 'Filter Platform', value: platform === 'all' ? 'Semua Platform' : platform },
+      { label: 'Filter Niche', value: niche === 'all' ? 'Semua Niche' : niche },
+    ]
+
+    printPDFReport(
+      'Laporan Direktori KOL',
+      'Daftar kandidat KOL beserta estimasi rate card dan performa',
+      headers,
+      exportRows,
+      summaryCards
+    )
+    toast.info('Menyiapkan Cetak PDF', 'Jendela laporan cetak/PDF telah dibuka.')
   }
 
   return (
@@ -100,7 +138,7 @@ function KolDirectoryPage() {
             Database terpusat influencer & KOL untuk riset campaign yang efisien.
           </p>
         </div>
-        <div className="flex items-center gap-2 self-start md:self-auto">
+        <div className="flex items-center gap-2 self-start md:self-auto flex-wrap">
           <Button
             onClick={handleExportKols}
             variant="outline"
@@ -108,13 +146,23 @@ function KolDirectoryPage() {
             className="text-xs text-[#7C3AED] border-purple-200 hover:bg-purple-50 shadow-xs"
           >
             <Download className="w-4 h-4 mr-1" />
-            Ekspor Data KOL (CSV)
+            CSV
+          </Button>
+          <Button
+            onClick={handleExportKolsPDF}
+            variant="outline"
+            disabled={kolsList.length === 0}
+            className="text-xs text-indigo-700 bg-indigo-50/50 border-indigo-200 hover:bg-indigo-100/70 font-medium shadow-xs"
+          >
+            <Printer className="w-4 h-4 mr-1" />
+            Cetak PDF
           </Button>
           <Button onClick={() => setIsFormOpen(true)} className="shadow-sm">
             <Plus className="w-4 h-4" />
             Tambah KOL Baru
           </Button>
         </div>
+
       </div>
 
       {/* Main Hybrid Layout (Sub-Sidebar Left + Glass Content Right) */}

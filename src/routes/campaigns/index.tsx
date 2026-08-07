@@ -7,6 +7,7 @@ import { Card } from '../../components/ui/card'
 import { Dialog } from '../../components/ui/dialog'
 import { Input } from '../../components/ui/input'
 import { Badge } from '../../components/ui/badge'
+import { useToast } from '../../components/ui/toast'
 
 export const Route = createFileRoute('/campaigns/')({
   component: CampaignsPage,
@@ -25,6 +26,7 @@ function formatIDR(val: string | number | null | undefined): string {
 }
 
 function CampaignsPage() {
+  const toast = useToast()
   const [campaignsList, setCampaignsList] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [isOpen, setIsOpen] = useState(false)
@@ -42,6 +44,7 @@ function CampaignsPage() {
       setCampaignsList(data)
     } catch (err) {
       console.error(err)
+      toast.error('Gagal Memuat Kampanye', 'Terjadi kesalahan saat mengambil daftar kampanye.')
     } finally {
       setLoading(false)
     }
@@ -53,7 +56,10 @@ function CampaignsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!name) return
+    if (!name.trim()) {
+      toast.warning('Validasi Form', 'Nama kampanye wajib diisi.')
+      return
+    }
 
     try {
       await createCampaign({
@@ -64,6 +70,7 @@ function CampaignsPage() {
           totalBudget: totalBudget || '0',
         },
       })
+      toast.success('Kampanye Dibuat', `Kampanye "${name}" berhasil dibuat.`)
       // Reset form
       setName('')
       setStartDate('')
@@ -73,6 +80,7 @@ function CampaignsPage() {
       fetchCampaigns()
     } catch (err) {
       console.error(err)
+      toast.error('Gagal Membuat Kampanye', 'Terjadi kesalahan saat menyimpan kampanye baru.')
     }
   }
 
@@ -80,11 +88,14 @@ function CampaignsPage() {
     if (!confirm('Apakah Anda yakin ingin menghapus kampanye ini? Seluruh data alokasi KOL juga akan terhapus.')) return
     try {
       await deleteCampaign({ data: id })
+      toast.info('Kampanye Dihapus', 'Kampanye berhasil dihapus.')
       fetchCampaigns()
     } catch (err) {
       console.error(err)
+      toast.error('Gagal Menghapus Kampanye', 'Tidak dapat menghapus kampanye.')
     }
   }
+
 
   return (
     <div className="flex flex-col gap-6">

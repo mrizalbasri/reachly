@@ -73,3 +73,13 @@ export const performanceRecords = pgTable('performance_records', {
   cpv: numeric('cpv'),
   createdAt: timestamp('created_at').defaultNow(),
 })
+
+export const pipelineLogs = pgTable('pipeline_logs', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  pipelineEntryId: uuid('pipeline_entry_id').references(() => pipelineEntries.id, { onDelete: 'cascade' }).notNull(),
+  fromStatus: pipelineStatusEnum('from_status'),
+  toStatus: pipelineStatusEnum('to_status').notNull(),
+  notes: text('notes'),
+  createdAt: timestamp('created_at').defaultNow(),
+})
+

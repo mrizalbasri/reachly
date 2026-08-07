@@ -13,7 +13,7 @@ import {
 } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, History } from 'lucide-react'
 
 import {
   getPipelineEntries,
@@ -26,6 +26,8 @@ import { Button } from '../../components/ui/button'
 import { Card } from '../../components/ui/card'
 import { Badge } from '../../components/ui/badge'
 import { Dialog } from '../../components/ui/dialog'
+import { PipelineHistoryModal } from '../../components/pipeline/pipeline-history-modal'
+import { useToast } from '../../components/ui/toast'
 
 export const Route = createFileRoute('/pipeline/')({
   component: PipelinePage,
@@ -59,12 +61,24 @@ function formatIDR(val: string | number | null | undefined): string {
 }
 
 function PipelinePage() {
+  const toast = useToast()
   const [entries, setEntries] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [activeCard, setActiveCard] = useState<any | null>(null)
   const [isAddOpen, setIsAddOpen] = useState(false)
   const [availableKols, setAvailableKols] = useState<any[]>([])
   const [selectedKolId, setSelectedKolId] = useState('')
+
+  // History Modal State
+  const [historyModal, setHistoryModal] = useState<{
+    isOpen: boolean
+    pipelineEntryId: string
+    kolName: string
+  }>({
+    isOpen: false,
+    pipelineEntryId: '',
+    kolName: '',
+  })
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -78,6 +92,7 @@ function PipelinePage() {
       setEntries(data)
     } catch (err) {
       console.error(err)
+      toast.error('Gagal Memuat Pipeline', 'Terjadi kesalahan saat mengambil data pipeline.')
     } finally {
       setLoading(false)
     }
@@ -95,13 +110,19 @@ function PipelinePage() {
       setIsAddOpen(true)
     } catch (err) {
       console.error(err)
+      toast.error('Gagal Memuat KOL', 'Tidak dapat mengambil daftar KOL.')
     }
   }
 
   const handleCreateEntry = async () => {
-    if (!selectedKolId) return
+    if (!selectedKolId) {
+      toast.warning('Pilih KOL', 'Silakan pilih KOL terlebih dahulu.')
+      return
+    }
+    const kol = availableKols.find((k) => k.id === selectedKolId)
     try {
       await updatePipelineStatus({ data: { id: selectedKolId, status: 'prospek' } })
+      toast.success('KOL Ditambahkan', `${kol?.name || 'KOL'} berhasil dipindahkan ke Prospek.`)
       fetchEntries()
       setIsAddOpen(false)
     } catch (err) {
@@ -109,10 +130,12 @@ function PipelinePage() {
       try {
         const { createPipelineEntry } = await import('../../server/pipeline')
         await createPipelineEntry({ data: { kolId: selectedKolId, status: 'prospek' } })
+        toast.success('KOL Ditambahkan', `${kol?.name || 'KOL'} berhasil dimasukkan ke Pipeline Prospek.`)
         fetchEntries()
         setIsAddOpen(false)
       } catch (e) {
         console.error(e)
+        toast.error('Gagal Menambahkan', 'Terjadi kesalahan saat menambahkan KOL ke pipeline.')
       }
     }
   }
@@ -140,27 +163,37 @@ function PipelinePage() {
     }
 
     if (newStatus) {
+      const activeEntry = entries.find((e) => e.id === activeId)
+      if (activeEntry && activeEntry.status === newStatus) return
+
       setEntries((prev) =>
         prev.map((item) => (item.id === activeId ? { ...item, status: newStatus } : item))
       )
 
       try {
         await updatePipelineStatus({ data: { id: activeId, status: newStatus } })
+        toast.success('Status Diperbarui', `${activeEntry?.kolName || 'KOL'} dipindahkan ke ${newStatus}.`)
       } catch (err) {
         console.error(err)
+        toast.error('Gagal Memperbarui Status', 'Perubahan status tidak tersimpan di server.')
         fetchEntries()
       }
     }
   }
 
   const handleMoveColumn = async (entryId: string, newStatus: PipelineStatusType) => {
+    const activeEntry = entries.find((e) => e.id === entryId)
+    if (activeEntry && activeEntry.status === newStatus) return
+
     setEntries((prev) =>
       prev.map((item) => (item.id === entryId ? { ...item, status: newStatus } : item))
     )
     try {
       await updatePipelineStatus({ data: { id: entryId, status: newStatus } })
+      toast.success('Status Diperbarui', `${activeEntry?.kolName || 'KOL'} dipindahkan ke ${newStatus}.`)
     } catch (err) {
       console.error(err)
+      toast.error('Gagal Memperbarui Status', 'Perubahan status tidak tersimpan di server.')
       fetchEntries()
     }
   }
@@ -169,10 +202,20 @@ function PipelinePage() {
     if (!confirm('Hapus entry dari pipeline?')) return
     try {
       await deletePipelineEntry({ data: entryId })
+      toast.info('Entry Dihapus', 'Entry KOL berhasil dihapus dari pipeline.')
       fetchEntries()
     } catch (err) {
       console.error(err)
+      toast.error('Gagal Menghapus', 'Tidak dapat menghapus entry pipeline.')
     }
+  }
+
+  const handleOpenHistory = (entry: any) => {
+    setHistoryModal({
+      isOpen: true,
+      pipelineEntryId: entry.id,
+      kolName: entry.kolName || 'KOL',
+    })
   }
 
   return (
@@ -212,6 +255,7 @@ function PipelinePage() {
                   entries={columnEntries}
                   onMove={handleMoveColumn}
                   onDelete={handleDeleteEntry}
+                  onOpenHistory={handleOpenHistory}
                 />
               )
             })}
@@ -223,25 +267,26 @@ function PipelinePage() {
         </DndContext>
       )}
 
-      {/* Dialog Tambah ke Pipeline */}
+      {/* Add Modal */}
       <Dialog isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} title="Tambah KOL ke Pipeline">
         <div className="flex flex-col gap-4">
+          <p className="text-xs text-[#8E8E93]">
+            Pilih KOL dari direktori yang ingin dimasukkan ke status awal (Prospek).
+          </p>
           {availableKols.length === 0 ? (
-            <p className="text-xs text-[#8E8E93]">
-              Belum ada data KOL di direktori. Tambahkan KOL terlebih dahulu di menu Direktori KOL.
-            </p>
+            <p className="text-xs text-red-500">Belum ada KOL di direktori. Tambahkan KOL terlebih dahulu.</p>
           ) : (
             <>
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-[#1C1C1E]">Pilih KOL</label>
+              <div>
+                <label className="block text-xs font-semibold text-[#1C1C1E] mb-1">Pilih KOL</label>
                 <select
                   value={selectedKolId}
                   onChange={(e) => setSelectedKolId(e.target.value)}
-                  className="px-3 py-2 text-xs bg-white border border-[#EEEEF0] rounded-xl text-[#1C1C1E] focus:outline-none"
+                  className="w-full text-xs p-2.5 rounded-xl border border-[#EEEEF0] bg-white focus:outline-none focus:border-[#7C3AED]"
                 >
-                  {availableKols.map((k) => (
-                    <option key={k.id} value={k.id}>
-                      {k.name} ({k.platform}) — {formatFollowers(k.followers)} followers
+                  {availableKols.map((kol) => (
+                    <option key={kol.id} value={kol.id}>
+                      {kol.name} ({kol.platform} — {kol.niche || 'General'})
                     </option>
                   ))}
                 </select>
@@ -257,6 +302,14 @@ function PipelinePage() {
           )}
         </div>
       </Dialog>
+
+      {/* History Log Modal */}
+      <PipelineHistoryModal
+        isOpen={historyModal.isOpen}
+        onClose={() => setHistoryModal((prev) => ({ ...prev, isOpen: false }))}
+        pipelineEntryId={historyModal.pipelineEntryId}
+        kolName={historyModal.kolName}
+      />
     </div>
   )
 }
@@ -266,11 +319,13 @@ function KanbanColumn({
   entries,
   onMove,
   onDelete,
+  onOpenHistory,
 }: {
   column: { id: PipelineStatusType; title: string }
   entries: any[]
   onMove: (id: string, newStatus: PipelineStatusType) => void
   onDelete: (id: string) => void
+  onOpenHistory?: (entry: any) => void
 }) {
   return (
     <div className="w-full glass-panel rounded-2xl p-3 flex flex-col gap-3 min-h-[500px]">
@@ -293,7 +348,13 @@ function KanbanColumn({
             </div>
           ) : (
             entries.map((entry) => (
-              <SortableKanbanCard key={entry.id} entry={entry} onMove={onMove} onDelete={onDelete} />
+              <SortableKanbanCard
+                key={entry.id}
+                entry={entry}
+                onMove={onMove}
+                onDelete={onDelete}
+                onOpenHistory={onOpenHistory}
+              />
             ))
           )}
         </div>
@@ -306,10 +367,12 @@ function SortableKanbanCard({
   entry,
   onMove,
   onDelete,
+  onOpenHistory,
 }: {
   entry: any
   onMove: (id: string, newStatus: PipelineStatusType) => void
   onDelete: (id: string) => void
+  onOpenHistory?: (entry: any) => void
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: entry.id,
@@ -323,7 +386,7 @@ function SortableKanbanCard({
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <KanbanCardItem entry={entry} onMove={onMove} onDelete={onDelete} />
+      <KanbanCardItem entry={entry} onMove={onMove} onDelete={onDelete} onOpenHistory={onOpenHistory} />
     </div>
   )
 }
@@ -332,11 +395,13 @@ function KanbanCardItem({
   entry,
   onMove,
   onDelete,
+  onOpenHistory,
   isOverlay = false,
 }: {
   entry: any
   onMove?: (id: string, newStatus: PipelineStatusType) => void
   onDelete?: (id: string) => void
+  onOpenHistory?: (entry: any) => void
   isOverlay?: boolean
 }) {
   return (
@@ -352,15 +417,26 @@ function KanbanCardItem({
             {entry.kolPlatform} • {formatFollowers(entry.kolFollowers)} followers
           </span>
         </div>
-        {onDelete && (
-          <button
-            onClick={() => onDelete(entry.id)}
-            className="text-gray-300 hover:text-red-500 transition-colors p-1"
-            title="Hapus"
-          >
-            <Trash2 className="w-3 h-3" />
-          </button>
-        )}
+        <div className="flex items-center gap-0.5">
+          {onOpenHistory && (
+            <button
+              onClick={() => onOpenHistory(entry)}
+              className="text-gray-400 hover:text-indigo-600 transition-colors p-1"
+              title="Lihat Riwayat Pipeline"
+            >
+              <History className="w-3.5 h-3.5" />
+            </button>
+          )}
+          {onDelete && (
+            <button
+              onClick={() => onDelete(entry.id)}
+              className="text-gray-300 hover:text-red-500 transition-colors p-1"
+              title="Hapus"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="flex items-center justify-between text-[11px] pt-1 border-t border-gray-100">

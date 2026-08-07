@@ -12,6 +12,7 @@ import {
   Award,
   Sparkles,
   Download,
+  Printer,
 } from 'lucide-react'
 import { getAnalyticsOverview } from '../../server/analytics'
 import { getCampaigns } from '../../server/campaigns'
@@ -21,13 +22,15 @@ import { Badge } from '../../components/ui/badge'
 import { PerformanceModal } from '../../components/analytics/performance-modal'
 import { CustomSelect } from '../../components/ui/custom-select'
 import { formatFollowers, formatIDR } from '../../utils/formatters'
-import { downloadCSV } from '../../utils/export'
+import { downloadCSV, printPDFReport } from '../../utils/export'
+import { useToast } from '../../components/ui/toast'
 
 export const Route = createFileRoute('/analytics/')({
   component: AnalyticsPage,
 })
 
 function AnalyticsPage() {
+  const toast = useToast()
   const [data, setData] = useState<any>(null)
   const [campaignList, setCampaignList] = useState<any[]>([])
   const [selectedCampaign, setSelectedCampaign] = useState('all')
@@ -53,6 +56,7 @@ function AnalyticsPage() {
       setCampaignList(camps)
     } catch (err) {
       console.error(err)
+      toast.error('Gagal Memuat Data', 'Terjadi kesalahan saat memuat data analisis ROI.')
     } finally {
       setLoading(false)
     }
@@ -113,7 +117,49 @@ function AnalyticsPage() {
       r.cpe || '-',
     ])
     downloadCSV(`laporan_analytics_reachly_${new Date().toISOString().slice(0, 10)}.csv`, headers, exportRows)
+    toast.success('Ekspor CSV Berhasil', 'File CSV laporan analisis telah diunduh.')
   }
+
+  const handleExportPDF = () => {
+    if (!rows.length) return
+    const headers = [
+      'Nama KOL',
+      'Platform',
+      'Kampanye',
+      'Budget Alokasi',
+      'Views',
+      'Engagement',
+      'CPM',
+      'CPE',
+    ]
+    const exportRows = rows.map((r: any) => [
+      r.kolName || '',
+      r.kolPlatform || '',
+      r.campaignName || '',
+      formatIDR(r.allocatedBudget || 0),
+      (r.views || 0).toLocaleString('id-ID'),
+      (r.engagement || 0).toLocaleString('id-ID'),
+      r.cpm ? formatIDR(r.cpm) : '-',
+      r.cpe ? formatIDR(r.cpe) : '-',
+    ])
+
+    const summaryCards = [
+      { label: 'Total Impression / Views', value: (summary.totalViews || 0).toLocaleString('id-ID') },
+      { label: 'Total Engagement', value: (summary.totalEngagement || 0).toLocaleString('id-ID') },
+      { label: 'Total Alokasi Budget', value: formatIDR(summary.totalBudgetAllocated || 0) },
+      { label: 'Rata-rata CPM', value: formatIDR(summary.avgCpm || 0) },
+    ]
+
+    printPDFReport(
+      'Laporan Performa & ROI Kampanye KOL',
+      `Berdasarkan filter kampanye (${selectedCampaign === 'all' ? 'Semua Kampanye' : 'Spesifik'}) dan platform (${selectedPlatform === 'all' ? 'Semua Platform' : selectedPlatform})`,
+      headers,
+      exportRows,
+      summaryCards
+    )
+    toast.info('Menyiapkan Cetak PDF', 'Jendela laporan cetak/PDF telah dibuka.')
+  }
+
 
   return (
     <div className="flex flex-col gap-6">
@@ -230,7 +276,7 @@ function AnalyticsPage() {
             <h3 className="font-bold text-base text-[#1C1C1E]">Efisiensi & Ranking Performa KOL</h3>
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 flex-wrap">
             <Button
               onClick={handleExportAnalytics}
               variant="outline"
@@ -239,12 +285,23 @@ function AnalyticsPage() {
               className="h-8 px-3 text-xs text-[#7C3AED] border-purple-200 hover:bg-purple-50 flex items-center gap-1.5 shadow-xs"
             >
               <Download className="w-3.5 h-3.5" />
-              Ekspor Laporan (CSV)
+              CSV
+            </Button>
+            <Button
+              onClick={handleExportPDF}
+              variant="outline"
+              size="sm"
+              disabled={rows.length === 0}
+              className="h-8 px-3 text-xs text-indigo-700 bg-indigo-50/50 border-indigo-200 hover:bg-indigo-100/70 flex items-center gap-1.5 shadow-xs font-medium"
+            >
+              <Printer className="w-3.5 h-3.5" />
+              Cetak PDF
             </Button>
             <span className="text-xs text-[#8E8E93] border-l border-[#EEEEF0] pl-3">
               {rows.length} Alokasi KOL Terdaftar
             </span>
           </div>
+
         </div>
 
         {loading ? (
