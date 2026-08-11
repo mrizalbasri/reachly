@@ -1,3 +1,5 @@
+import * as XLSX from 'xlsx'
+
 export function downloadCSV(
   filename: string,
   headers: string[],
@@ -29,6 +31,43 @@ export function downloadCSV(
   link.click()
   document.body.removeChild(link)
   URL.revokeObjectURL(url)
+}
+
+export function downloadExcel(
+  filename: string,
+  sheetName: string,
+  headers: string[],
+  rows: (string | number | null | undefined)[][],
+  summaryCards?: SummaryCardItem[]
+) {
+  const wb = XLSX.utils.book_new()
+  const data: any[][] = []
+
+  if (summaryCards && summaryCards.length > 0) {
+    summaryCards.forEach((card) => {
+      data.push([card.label, card.value])
+    })
+    data.push([]) // Baris kosong pemisah
+  }
+
+  data.push(headers)
+  rows.forEach((r) => data.push(r.map((c) => c ?? '')))
+
+  const ws = XLSX.utils.aoa_to_sheet(data)
+
+  // Auto-fit width kolom
+  const colWidths = headers.map((h, colIdx) => {
+    let maxLen = h.length
+    rows.forEach((r) => {
+      const cellVal = String(r[colIdx] ?? '')
+      if (cellVal.length > maxLen) maxLen = cellVal.length
+    })
+    return { wch: Math.min(Math.max(maxLen + 4, 12), 45) }
+  })
+  ws['!cols'] = colWidths
+
+  XLSX.utils.book_append_sheet(wb, ws, sheetName.slice(0, 30))
+  XLSX.writeFile(wb, filename.endsWith('.xlsx') ? filename : `${filename}.xlsx`)
 }
 
 export interface SummaryCardItem {

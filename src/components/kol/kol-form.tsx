@@ -3,6 +3,7 @@ import { Button } from '../ui/button'
 import { Input, Select } from '../ui/input'
 import { createKol, type CreateKolInput } from '../../server/kol'
 import { useToast } from '../ui/toast'
+import { kolSchema } from '../../utils/validations'
 
 interface KolFormProps {
   onSuccess: () => void
@@ -35,9 +36,12 @@ export function KolForm({ onSuccess, onCancel }: KolFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!formData.name.trim()) {
-      setError('Nama KOL wajib diisi')
-      toast.warning('Validasi Form', 'Nama KOL wajib diisi.')
+
+    const validationResult = kolSchema.safeParse(formData)
+    if (!validationResult.success) {
+      const firstIssue = validationResult.error.issues[0]?.message || 'Validasi form gagal'
+      setError(firstIssue)
+      toast.warning('Validasi Form', firstIssue)
       return
     }
 

@@ -2,6 +2,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { eq, and, sql, desc } from 'drizzle-orm'
 import { db } from '../db/index'
 import { performanceRecords, campaignKols, kols, campaigns } from '../db/schema'
+import { calculateRoiMetrics } from '../utils/formatters'
 
 export interface UpsertPerformanceInput {
   campaignKolId: string
@@ -30,13 +31,8 @@ export const upsertPerformanceRecord = createServerFn({ method: 'POST' })
       const engagement = data.engagement || 0
       const conversions = data.conversions || 0
 
-      // Calculate ROI metrics
-      // CPM = (Budget / Views) * 1000
-      const cpm = views > 0 ? ((budget / views) * 1000).toFixed(2) : null
-      // CPE = Budget / Engagement
-      const cpe = engagement > 0 ? (budget / engagement).toFixed(2) : null
-      // CPV = Budget / Views
-      const cpv = views > 0 ? (budget / views).toFixed(2) : null
+      // Calculate ROI metrics via shared helper
+      const { cpm, cpe, cpv } = calculateRoiMetrics(budget, views, engagement)
 
       const payload = { views, engagement, conversions, cpm, cpe, cpv }
 

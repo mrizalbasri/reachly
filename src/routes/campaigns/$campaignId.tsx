@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { ArrowLeft, Megaphone, Calendar, DollarSign, Users, Plus, Trash2, Edit2, Link2, BarChart2, Download, Printer } from 'lucide-react'
+import { ArrowLeft, Megaphone, Calendar, DollarSign, Users, Plus, Trash2, Edit2, Link2, BarChart2, Download, Printer, FileSpreadsheet } from 'lucide-react'
 import { getCampaignById, getCampaignKols, allocateKolToCampaign, removeKolFromCampaign } from '../../server/campaigns'
 import { getKols } from '../../server/kol'
 import { Button } from '../../components/ui/button'
@@ -10,7 +10,7 @@ import { Input } from '../../components/ui/input'
 import { Badge } from '../../components/ui/badge'
 import { PerformanceModal } from '../../components/analytics/performance-modal'
 import { formatFollowers, formatIDR } from '../../utils/formatters'
-import { downloadCSV, printPDFReport } from '../../utils/export'
+import { downloadCSV, downloadExcel, printPDFReport } from '../../utils/export'
 import { useToast } from '../../components/ui/toast'
 
 export const Route = createFileRoute('/campaigns/$campaignId')({
@@ -38,7 +38,7 @@ function CampaignDetailPage() {
 
   const handleOpenPerfModal = (kol: any) => {
     setPerfItem({
-      campaignKolId: kol.id,
+      campaignKolId: kol.campaignKolId,
       kolName: kol.kolName,
       campaignName: campaign?.name,
       views: kol.views,
@@ -51,20 +51,20 @@ function CampaignDetailPage() {
   const loadData = async () => {
     setLoading(true)
     try {
-      const campData = await getCampaignById({ data: campaignId })
-      setCampaign(campData)
-      
-      const kolsData = await getCampaignKols({ data: campaignId })
-      setCampaignKolsList(kolsData)
-      
-      const allKols = await getKols()
-      setAvailableKols(allKols)
-      if (allKols.length > 0) {
-        setSelectedKolId(allKols[0].id)
-      }
+      const [cData, ckData, kData] = await Promise.all([
+        getCampaignById({ data: campaignId }),
+        getCampaignKols({ data: campaignId }),
+        getKols({ data: {} }),
+      ])
+      setCampaign(cData)
+      setCampaignKolsList(ckData)
+
+      // Filter out already allocated KOLs
+      const allocatedIds = new Set(ckData.map((ck: any) => ck.kolId))
+      setAvailableKols(kData.filter((k: any) => !allocatedIds.has(k.id)))
     } catch (err) {
       console.error(err)
-      toast.error('Gagal Memuat Kampanye', 'Terjadi kesalahan saat memuat detail kampanye.')
+      toast.error('Gagal Memuat Data', 'Tidak dapat mengambil detail kampanye.')
     } finally {
       setLoading(false)
     }
@@ -77,7 +77,7 @@ function CampaignDetailPage() {
   const handleAllocate = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedKolId) {
-      toast.warning('Pilih KOL', 'Silakan pilih KOL yang akan dialokasikan.')
+      toast.warning('Validasi Form', 'Silakan pilih KOL.')
       return
     }
 
@@ -89,24 +89,22 @@ function CampaignDetailPage() {
           allocatedBudget: allocatedBudget || '0',
         },
       })
-      toast.success('KOL Dialokasikan', 'Berhasil mengalokasikan KOL ke kampanye ini.')
-      setAllocatedBudget('')
+      toast.success('KOL Dialokasikan', 'Berhasil menambahkan KOL ke dalam kampanye.')
       setIsOpen(false)
+      setSelectedKolId('')
+      setAllocatedBudget('')
       loadData()
     } catch (err) {
       console.error(err)
-      toast.error('Gagal Mengalokasikan', 'Terjadi kesalahan saat mengalokasikan KOL.')
+      toast.error('Gagal Alokasi', 'Terjadi kesalahan saat mengalokasikan KOL.')
     }
   }
 
-  const handleDeallocate = async (kolId: string) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus KOL ini dari kampanye?')) return
+  const handleRemove = async (campaignKolId: string) => {
+    if (!confirm('Apakah Anda yakin ingin menghapus KOL dari kampanye ini?')) return
     try {
       await removeKolFromCampaign({
-        data: {
-          campaignId,
-          kolId,
-        },
+        data: { campaignKolId },
       })
       toast.info('Alokasi Dihapus', 'KOL telah dihapus dari kampanye ini.')
       loadData()
@@ -156,9 +154,39 @@ function CampaignDetailPage() {
     toast.success('Ekspor CSV Berhasil', 'File CSV alokasi KOL telah diunduh.')
   }
 
+  const handleExportCampaignExcel = () => {
+    if (!campaignKolsList.length) return
+    const headers = ['Nama KOL', 'Platform', 'Username', 'Followers', 'Rate Card (IDR)', 'Budget Teralokasi (IDR)', 'Status']
+    const exportRows = campaignKolsList.map((k) => [
+      k.kolName || '',
+      k.kolPlatform || '',
+      k.kolUsername ? `@${k.kolUsername}` : '',
+      k.kolFollowers || 0,
+      formatIDR(k.kolRate || 0),
+      formatIDR(k.allocatedBudget || 0),
+      k.status || 'prospek',
+    ])
+    const summaryCards = [
+      { label: 'Nama Kampanye', value: campaign.name },
+      { label: 'Total Budget', value: formatIDR(total) },
+      { label: 'Budget Teralokasi', value: formatIDR(allocated) },
+      { label: 'Sisa Budget', value: formatIDR(remaining) },
+      { label: 'Jumlah KOL', value: campaignKolsList.length },
+    ]
+    const cleanName = (campaign.name || 'kampanye').replace(/\s+/g, '_')
+    downloadExcel(
+      `alokasi_kol_${cleanName}_${new Date().toISOString().slice(0, 10)}.xlsx`,
+      'Alokasi KOL',
+      headers,
+      exportRows,
+      summaryCards
+    )
+    toast.success('Ekspor Excel Berhasil', 'File Excel (.xlsx) alokasi kampanye telah diunduh.')
+  }
+
   const handleExportCampaignPDF = () => {
     if (!campaignKolsList.length) return
-    const headers = ['Nama KOL', 'Platform', 'Username', 'Followers', 'Rate Card', 'Budget Alokasi', 'Status']
+    const headers = ['Nama KOL', 'Platform', 'Username', 'Followers', 'Rate Card (IDR)', 'Budget Teralokasi', 'Status']
     const exportRows = campaignKolsList.map((k) => [
       k.kolName || '',
       k.kolPlatform || '',
@@ -166,19 +194,19 @@ function CampaignDetailPage() {
       formatFollowers(k.kolFollowers),
       formatIDR(k.kolRate || 0),
       formatIDR(k.allocatedBudget || 0),
-      k.status || 'prospek',
+      (k.status || 'prospek').toUpperCase(),
     ])
 
     const summaryCards = [
-      { label: 'Total Budget Kampanye', value: formatIDR(total) },
-      { label: 'Total Budget Dialokasikan', value: formatIDR(allocated) },
-      { label: 'Sisa Budget Kampanye', value: formatIDR(remaining) },
-      { label: 'Jumlah KOL Terlibat', value: campaignKolsList.length },
+      { label: 'Total Budget', value: formatIDR(total) },
+      { label: 'Teralokasi', value: formatIDR(allocated) },
+      { label: 'Sisa Budget', value: formatIDR(remaining) },
+      { label: 'KOL Dialokasikan', value: campaignKolsList.length },
     ]
 
     printPDFReport(
       `Laporan Alokasi Kampanye — ${campaign.name}`,
-      `Detail alokasi budget dan status kerja sama KOL`,
+      'Ringkasan alokasi budget dan status kerja sama KOL',
       headers,
       exportRows,
       summaryCards
@@ -188,13 +216,11 @@ function CampaignDetailPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Back Button & Title */}
-      <div className="flex items-center justify-between">
-        <Link to="/campaigns">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="w-4 h-4" />
-            Kembali ke Kampanye
-          </Button>
+      {/* Top Header */}
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <Link to="/campaigns" className="inline-flex items-center gap-1.5 text-xs text-[#8E8E93] hover:text-[#1C1C1E] transition-colors">
+          <ArrowLeft className="w-4 h-4" />
+          <span>Kembali ke Daftar Kampanye</span>
         </Link>
         <div className="flex items-center gap-2 flex-wrap">
           <Button
@@ -202,17 +228,27 @@ function CampaignDetailPage() {
             variant="outline"
             size="sm"
             disabled={campaignKolsList.length === 0}
-            className="text-xs text-[#7C3AED] border-purple-200 hover:bg-purple-50"
+            className="text-xs text-[#7C3AED] border-purple-200 hover:bg-purple-50 shadow-xs"
           >
             <Download className="w-3.5 h-3.5 mr-1" />
             CSV
+          </Button>
+          <Button
+            onClick={handleExportCampaignExcel}
+            variant="outline"
+            size="sm"
+            disabled={campaignKolsList.length === 0}
+            className="text-xs text-emerald-700 bg-emerald-50/60 border-emerald-200 hover:bg-emerald-100/80 font-medium shadow-xs"
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5 mr-1 text-emerald-600" />
+            Excel (.xlsx)
           </Button>
           <Button
             onClick={handleExportCampaignPDF}
             variant="outline"
             size="sm"
             disabled={campaignKolsList.length === 0}
-            className="text-xs text-indigo-700 bg-indigo-50/50 border-indigo-200 hover:bg-indigo-100/70 font-medium"
+            className="text-xs text-indigo-700 bg-indigo-50/50 border-indigo-200 hover:bg-indigo-100/70 font-medium shadow-xs"
           >
             <Printer className="w-3.5 h-3.5 mr-1" />
             Cetak PDF

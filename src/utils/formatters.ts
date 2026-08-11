@@ -15,3 +15,20 @@ export function formatIDR(val: string | number | null | undefined): string {
     maximumFractionDigits: 0,
   }).format(num)
 }
+
+export interface RoiMetrics {
+  cpm: string | null
+  cpe: string | null
+  cpv: string | null
+}
+
+export function calculateRoiMetrics(
+  budget: number,
+  views: number,
+  engagement: number
+): RoiMetrics {
+  const cpm = views > 0 ? ((budget / views) * 1000).toFixed(2) : null
+  const cpe = engagement > 0 ? (budget / engagement).toFixed(2) : null
+  const cpv = views > 0 ? (budget / views).toFixed(2) : null
+  return { cpm, cpe, cpv }
+}

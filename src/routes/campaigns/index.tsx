@@ -8,6 +8,7 @@ import { Dialog } from '../../components/ui/dialog'
 import { Input } from '../../components/ui/input'
 import { Badge } from '../../components/ui/badge'
 import { useToast } from '../../components/ui/toast'
+import { campaignSchema } from '../../utils/validations'
 
 export const Route = createFileRoute('/campaigns/')({
   component: CampaignsPage,
@@ -56,8 +57,17 @@ function CampaignsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!name.trim()) {
-      toast.warning('Validasi Form', 'Nama kampanye wajib diisi.')
+
+    const validationResult = campaignSchema.safeParse({
+      name,
+      startDate: startDate || null,
+      endDate: endDate || null,
+      totalBudget: totalBudget || '0',
+    })
+
+    if (!validationResult.success) {
+      const firstIssue = validationResult.error.issues[0]?.message || 'Validasi kampanye gagal'
+      toast.warning('Validasi Form', firstIssue)
       return
     }
 

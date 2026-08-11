@@ -13,6 +13,7 @@ import {
   Sparkles,
   Download,
   Printer,
+  FileSpreadsheet,
 } from 'lucide-react'
 import { getAnalyticsOverview } from '../../server/analytics'
 import { getCampaigns } from '../../server/campaigns'
@@ -22,7 +23,7 @@ import { Badge } from '../../components/ui/badge'
 import { PerformanceModal } from '../../components/analytics/performance-modal'
 import { CustomSelect } from '../../components/ui/custom-select'
 import { formatFollowers, formatIDR } from '../../utils/formatters'
-import { downloadCSV, printPDFReport } from '../../utils/export'
+import { downloadCSV, downloadExcel, printPDFReport } from '../../utils/export'
 import { useToast } from '../../components/ui/toast'
 
 export const Route = createFileRoute('/analytics/')({
@@ -120,6 +121,51 @@ function AnalyticsPage() {
     toast.success('Ekspor CSV Berhasil', 'File CSV laporan analisis telah diunduh.')
   }
 
+  const handleExportAnalyticsExcel = () => {
+    if (!rows.length) return
+    const headers = [
+      'Nama KOL',
+      'Platform',
+      'Username',
+      'Kampanye',
+      'Budget Teralokasi (IDR)',
+      'Views',
+      'Engagement',
+      'Conversions',
+      'CPM (IDR)',
+      'CPE (IDR)',
+      'CPV (IDR)',
+    ]
+    const exportRows = rows.map((r: any) => [
+      r.kolName || '',
+      r.kolPlatform || '',
+      r.kolUsername ? `@${r.kolUsername}` : '',
+      r.campaignName || '',
+      formatIDR(r.allocatedBudget || 0),
+      r.views || 0,
+      r.engagement || 0,
+      r.conversions || 0,
+      r.cpm ? formatIDR(r.cpm) : '-',
+      r.cpe ? formatIDR(r.cpe) : '-',
+      r.cpv ? formatIDR(r.cpv) : '-',
+    ])
+    const summaryCards = [
+      { label: 'Total Views / Impression', value: (summary.totalViews || 0).toLocaleString('id-ID') },
+      { label: 'Total Engagement', value: (summary.totalEngagement || 0).toLocaleString('id-ID') },
+      { label: 'Total Budget Teralokasi', value: formatIDR(summary.totalBudgetAllocated || 0) },
+      { label: 'Rata-rata CPM', value: formatIDR(summary.avgCpm || 0) },
+      { label: 'Rata-rata CPE', value: formatIDR(summary.avgCpe || 0) },
+    ]
+    downloadExcel(
+      `laporan_analytics_reachly_${new Date().toISOString().slice(0, 10)}.xlsx`,
+      'Analisis Performa ROI',
+      headers,
+      exportRows,
+      summaryCards
+    )
+    toast.success('Ekspor Excel Berhasil', 'File Excel (.xlsx) laporan analisis telah diunduh.')
+  }
+
   const handleExportPDF = () => {
     if (!rows.length) return
     const headers = [
@@ -175,33 +221,63 @@ function AnalyticsPage() {
           </p>
         </div>
 
-        {/* Filter Controls */}
-        <div className="flex items-center gap-2.5 bg-white p-1.5 rounded-2xl border border-[#EEEEF0] shadow-xs shrink-0">
-          <div className="flex items-center gap-1.5 text-xs text-[#8E8E93] pl-2 font-medium">
-            <Filter className="w-3.5 h-3.5 text-[#7C3AED]" />
-            <span>Filter:</span>
+        {/* Filter & Export Controls */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2 bg-white p-1.5 rounded-2xl border border-[#EEEEF0] shadow-xs">
+            <div className="flex items-center gap-1.5 text-xs text-[#8E8E93] pl-2 font-medium">
+              <Filter className="w-3.5 h-3.5 text-[#7C3AED]" />
+              <span>Filter:</span>
+            </div>
+
+            <CustomSelect
+              value={selectedCampaign}
+              onChange={setSelectedCampaign}
+              options={[
+                { value: 'all', label: 'Semua Kampanye' },
+                ...campaignList.map((c) => ({ value: c.id, label: c.name })),
+              ]}
+            />
+
+            <CustomSelect
+              value={selectedPlatform}
+              onChange={setSelectedPlatform}
+              options={[
+                { value: 'all', label: 'Semua Platform' },
+                { value: 'Instagram', label: 'Instagram' },
+                { value: 'TikTok', label: 'TikTok' },
+                { value: 'YouTube', label: 'YouTube' },
+                { value: 'Twitter', label: 'Twitter' },
+              ]}
+            />
           </div>
 
-          <CustomSelect
-            value={selectedCampaign}
-            onChange={setSelectedCampaign}
-            options={[
-              { value: 'all', label: 'Semua Kampanye' },
-              ...campaignList.map((c) => ({ value: c.id, label: c.name })),
-            ]}
-          />
-
-          <CustomSelect
-            value={selectedPlatform}
-            onChange={setSelectedPlatform}
-            options={[
-              { value: 'all', label: 'Semua Platform' },
-              { value: 'Instagram', label: 'Instagram' },
-              { value: 'TikTok', label: 'TikTok' },
-              { value: 'YouTube', label: 'YouTube' },
-              { value: 'Twitter', label: 'Twitter' },
-            ]}
-          />
+          <Button
+            onClick={handleExportAnalytics}
+            variant="outline"
+            disabled={rows.length === 0}
+            className="text-xs text-[#7C3AED] border-purple-200 hover:bg-purple-50 shadow-xs"
+          >
+            <Download className="w-4 h-4 mr-1" />
+            CSV
+          </Button>
+          <Button
+            onClick={handleExportAnalyticsExcel}
+            variant="outline"
+            disabled={rows.length === 0}
+            className="text-xs text-emerald-700 bg-emerald-50/60 border-emerald-200 hover:bg-emerald-100/80 font-medium shadow-xs"
+          >
+            <FileSpreadsheet className="w-4 h-4 mr-1 text-emerald-600" />
+            Excel (.xlsx)
+          </Button>
+          <Button
+            onClick={handleExportPDF}
+            variant="outline"
+            disabled={rows.length === 0}
+            className="text-xs text-indigo-700 bg-indigo-50/50 border-indigo-200 hover:bg-indigo-100/70 font-medium shadow-xs"
+          >
+            <Printer className="w-4 h-4 mr-1" />
+            Cetak PDF
+          </Button>
         </div>
       </div>
 

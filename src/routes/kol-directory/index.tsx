@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { Plus, Search, Users, Eye, Kanban, Trash2, CheckCircle2, Download, Printer } from 'lucide-react'
+import { Plus, Search, Users, Eye, Kanban, Trash2, CheckCircle2, Download, Printer, FileSpreadsheet } from 'lucide-react'
 
 import { getKols, deleteKol } from '../../server/kol'
 import { createPipelineEntry } from '../../server/pipeline'
@@ -10,8 +10,9 @@ import { Dialog } from '../../components/ui/dialog'
 import { KolForm } from '../../components/kol/kol-form'
 import { CustomSelect } from '../../components/ui/custom-select'
 import { formatFollowers, formatIDR } from '../../utils/formatters'
-import { downloadCSV, printPDFReport } from '../../utils/export'
+import { downloadCSV, downloadExcel, printPDFReport } from '../../utils/export'
 import { useToast } from '../../components/ui/toast'
+import { getFollowerTier, FOLLOWER_TIERS, type FollowerTier } from '../../utils/validations'
 
 export const Route = createFileRoute('/kol-directory/')({
   component: KolDirectoryPage,
@@ -36,6 +37,7 @@ function KolDirectoryPage() {
   const [search, setSearch] = useState('')
   const [niche, setNiche] = useState('all')
   const [platform, setPlatform] = useState('all')
+  const [tierFilter, setTierFilter] = useState<FollowerTier>('all')
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [addedPipelineId, setAddedPipelineId] = useState<string | null>(null)
 
@@ -55,6 +57,11 @@ function KolDirectoryPage() {
   useEffect(() => {
     fetchKols()
   }, [search, niche, platform])
+
+  const filteredKolsList = kolsList.filter((kol) => {
+    if (tierFilter === 'all') return true
+    return getFollowerTier(kol.followers) === tierFilter
+  })
 
   const handleAddToPipeline = async (kolId: string, kolName: string) => {
     try {
@@ -81,9 +88,9 @@ function KolDirectoryPage() {
   }
 
   const handleExportKols = () => {
-    if (!kolsList.length) return
+    if (!filteredKolsList.length) return
     const headers = ['Nama KOL', 'Platform', 'Username', 'Niche', 'Followers', 'Engagement Rate', 'Rate Card (IDR)', 'Kontak', 'Catatan']
-    const exportRows = kolsList.map((k) => [
+    const exportRows = filteredKolsList.map((k) => [
       k.name || '',
       k.platform || '',
       k.username || '',
@@ -98,10 +105,40 @@ function KolDirectoryPage() {
     toast.success('Ekspor CSV Berhasil', 'File CSV direktori KOL telah diunduh.')
   }
 
+  const handleExportKolsExcel = () => {
+    if (!filteredKolsList.length) return
+    const headers = ['Nama KOL', 'Platform', 'Username', 'Niche', 'Followers', 'Engagement Rate (%)', 'Rate Card (IDR)', 'Kontak', 'Catatan']
+    const exportRows = filteredKolsList.map((k) => [
+      k.name || '',
+      k.platform || '',
+      k.username ? `@${k.username}` : '',
+      k.niche || '',
+      k.followers || 0,
+      k.engagementRate ? `${k.engagementRate}%` : '-',
+      formatIDR(k.ratePerPost || 0),
+      k.contact || '',
+      k.notes || '',
+    ])
+    const summaryCards = [
+      { label: 'Total KOL Terfilter', value: filteredKolsList.length },
+      { label: 'Filter Platform', value: platform === 'all' ? 'Semua Platform' : platform },
+      { label: 'Filter Niche', value: niche === 'all' ? 'Semua Niche' : niche },
+      { label: 'Filter Tier', value: FOLLOWER_TIERS.find((t) => t.id === tierFilter)?.label || 'Semua' },
+    ]
+    downloadExcel(
+      `direktori_kol_reachly_${new Date().toISOString().slice(0, 10)}.xlsx`,
+      'Direktori KOL',
+      headers,
+      exportRows,
+      summaryCards
+    )
+    toast.success('Ekspor Excel Berhasil', 'File Excel (.xlsx) direktori KOL telah diunduh.')
+  }
+
   const handleExportKolsPDF = () => {
-    if (!kolsList.length) return
+    if (!filteredKolsList.length) return
     const headers = ['Nama KOL', 'Platform', 'Username', 'Niche', 'Followers', 'Engagement Rate', 'Rate Card (IDR)', 'Kontak']
-    const exportRows = kolsList.map((k) => [
+    const exportRows = filteredKolsList.map((k) => [
       k.name || '',
       k.platform || '',
       k.username ? `@${k.username}` : '-',
@@ -113,7 +150,7 @@ function KolDirectoryPage() {
     ])
 
     const summaryCards = [
-      { label: 'Total KOL Terdaftar', value: kolsList.length },
+      { label: 'Total KOL Terdaftar', value: filteredKolsList.length },
       { label: 'Filter Platform', value: platform === 'all' ? 'Semua Platform' : platform },
       { label: 'Filter Niche', value: niche === 'all' ? 'Semua Niche' : niche },
     ]
@@ -142,16 +179,25 @@ function KolDirectoryPage() {
           <Button
             onClick={handleExportKols}
             variant="outline"
-            disabled={kolsList.length === 0}
+            disabled={filteredKolsList.length === 0}
             className="text-xs text-[#7C3AED] border-purple-200 hover:bg-purple-50 shadow-xs"
           >
             <Download className="w-4 h-4 mr-1" />
             CSV
           </Button>
           <Button
+            onClick={handleExportKolsExcel}
+            variant="outline"
+            disabled={filteredKolsList.length === 0}
+            className="text-xs text-emerald-700 bg-emerald-50/60 border-emerald-200 hover:bg-emerald-100/80 font-medium shadow-xs"
+          >
+            <FileSpreadsheet className="w-4 h-4 mr-1 text-emerald-600" />
+            Excel (.xlsx)
+          </Button>
+          <Button
             onClick={handleExportKolsPDF}
             variant="outline"
-            disabled={kolsList.length === 0}
+            disabled={filteredKolsList.length === 0}
             className="text-xs text-indigo-700 bg-indigo-50/50 border-indigo-200 hover:bg-indigo-100/70 font-medium shadow-xs"
           >
             <Printer className="w-4 h-4 mr-1" />
@@ -220,10 +266,20 @@ function KolDirectoryPage() {
             />
           </div>
 
+          <div className="flex flex-col gap-2">
+            <label className="text-[11px] font-semibold text-[#8E8E93] uppercase tracking-wider">Tier Followers</label>
+            <CustomSelect
+              value={tierFilter}
+              onChange={(val) => setTierFilter(val as FollowerTier)}
+              className="w-full"
+              options={FOLLOWER_TIERS.map((t) => ({ value: t.id, label: t.label }))}
+            />
+          </div>
+
           <div className="pt-3 border-t border-[#EEEEF0]/80">
             <div className="flex items-center justify-between text-xs text-[#8E8E93]">
               <span>Total Hasil:</span>
-              <span className="font-semibold text-[#7C3AED] bg-purple-50 px-2 py-0.5 rounded-full">{kolsList.length} KOL</span>
+              <span className="font-semibold text-[#7C3AED] bg-purple-50 px-2 py-0.5 rounded-full">{filteredKolsList.length} KOL</span>
             </div>
           </div>
         </aside>
@@ -234,14 +290,14 @@ function KolDirectoryPage() {
       {/* KOL Table / Grid */}
       {loading ? (
         <div className="py-12 text-center text-xs text-[#8E8E93]">Memuat data KOL...</div>
-      ) : kolsList.length === 0 ? (
+      ) : filteredKolsList.length === 0 ? (
         <Card className="py-16 text-center flex flex-col items-center justify-center gap-3">
           <div className="w-12 h-12 rounded-full bg-purple-50 text-[#7C3AED] flex items-center justify-center">
             <Users className="w-6 h-6" />
           </div>
-          <h3 className="font-semibold text-sm text-[#1C1C1E]">Belum Ada Data KOL</h3>
+          <h3 className="font-semibold text-sm text-[#1C1C1E]">Tidak Ada Data KOL</h3>
           <p className="text-xs text-[#8E8E93] max-w-sm">
-            Mulai tambahkan kandidat KOL pertama Anda untuk mempermudah riset dan pelacakan campaign.
+            KOL yang dicari tidak ditemukan dengan kombinasi filter saat ini.
           </p>
           <Button onClick={() => setIsFormOpen(true)} size="sm">
             <Plus className="w-3.5 h-3.5" />
@@ -263,7 +319,7 @@ function KolDirectoryPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#EEEEF0] text-xs">
-              {kolsList.map((kol) => {
+              {filteredKolsList.map((kol) => {
                 const gradient = getAvatarBg(kol.name)
                 const isAdded = addedPipelineId === kol.id
 

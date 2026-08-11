@@ -5,6 +5,7 @@ import { Input } from '../ui/input'
 import { upsertPerformanceRecord } from '../../server/analytics'
 import { useToast } from '../ui/toast'
 import { Eye, ThumbsUp, ShoppingBag } from 'lucide-react'
+import { performanceSchema } from '../../utils/validations'
 
 interface PerformanceModalProps {
   isOpen: boolean
@@ -45,17 +46,27 @@ export function PerformanceModal({ isOpen, onClose, onSuccess, item }: Performan
     e.preventDefault()
     if (!item?.campaignKolId) return
 
+    const payload = {
+      campaignKolId: item.campaignKolId,
+      views: views ? parseInt(views, 10) : 0,
+      engagement: engagement ? parseInt(engagement, 10) : 0,
+      conversions: conversions ? parseInt(conversions, 10) : 0,
+    }
+
+    const validationResult = performanceSchema.safeParse(payload)
+    if (!validationResult.success) {
+      const firstIssue = validationResult.error.issues[0]?.message || 'Validasi performa gagal'
+      setError(firstIssue)
+      toast.warning('Validasi Form', firstIssue)
+      return
+    }
+
     setLoading(true)
     setError('')
 
     try {
       await upsertPerformanceRecord({
-        data: {
-          campaignKolId: item.campaignKolId,
-          views: views ? parseInt(views, 10) : 0,
-          engagement: engagement ? parseInt(engagement, 10) : 0,
-          conversions: conversions ? parseInt(conversions, 10) : 0,
-        },
+        data: payload,
       })
 
       toast.success('Performa Diperbarui', `Data performa untuk ${item.kolName} berhasil disimpan.`)
