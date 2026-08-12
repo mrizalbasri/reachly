@@ -38,4 +38,5 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: mrizalbasri/reachly
+          files: ./coverage/lcov.info,./coverage/coverage-final.json
           fail_ci_if_error: true
