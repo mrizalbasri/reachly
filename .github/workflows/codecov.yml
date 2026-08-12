@@ -31,12 +31,11 @@ jobs:
         run: pnpm install
 
       - name: Run tests with coverage
-        run: pnpm test -- --coverage --coverage.reporter=text --coverage.reporter=json --coverage.reporter=lcov --coverage.reporter=clover
+        run: pnpm test -- --coverage
 
       - name: Upload results to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: mrizalbasri/reachly
-          directory: ./coverage
           fail_ci_if_error: true
