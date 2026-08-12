@@ -21,3 +21,4 @@ docs/*
 .agents/
 skills-lock.json
 .gitmassage
+coverage/
