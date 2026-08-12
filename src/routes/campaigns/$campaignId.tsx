@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { ArrowLeft, Megaphone, Calendar, DollarSign, Users, Plus, Trash2, Edit2, Link2, BarChart2, Download, Printer, FileSpreadsheet } from 'lucide-react'
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { ArrowLeft, Calendar, DollarSign, Users, Plus, Trash2, BarChart2, Download, Printer, FileSpreadsheet } from 'lucide-react'
 import { getCampaignById, getCampaignKols, allocateKolToCampaign, removeKolFromCampaign } from '../../server/campaigns'
 import { getKols } from '../../server/kol'
 import { Button } from '../../components/ui/button'
@@ -20,7 +20,6 @@ export const Route = createFileRoute('/campaigns/$campaignId')({
 function CampaignDetailPage() {
   const toast = useToast()
   const { campaignId } = Route.useParams()
-  const navigate = useNavigate()
   
   const [campaign, setCampaign] = useState<any>(null)
   const [campaignKolsList, setCampaignKolsList] = useState<any[]>([])
@@ -100,11 +99,11 @@ function CampaignDetailPage() {
     }
   }
 
-  const handleRemove = async (campaignKolId: string) => {
+  const handleRemove = async (kolId: string) => {
     if (!confirm('Apakah Anda yakin ingin menghapus KOL dari kampanye ini?')) return
     try {
       await removeKolFromCampaign({
-        data: { campaignKolId },
+        data: { campaignId, kolId },
       })
       toast.info('Alokasi Dihapus', 'KOL telah dihapus dari kampanye ini.')
       loadData()
@@ -381,10 +380,10 @@ function CampaignDetailPage() {
                           Performa
                         </Button>
                         <Button
-                          size="icon"
+                          size="sm"
                           variant="outline"
-                          onClick={() => handleDeallocate(kol.kolId)}
-                          className="w-7 h-7 hover:text-rose-500 hover:border-rose-100"
+                          onClick={() => handleRemove(kol.kolId)}
+                          className="w-7 h-7 p-0 hover:text-rose-500 hover:border-rose-100"
                           title="Hapus Alokasi"
                         >
                           <Trash2 className="w-3.5 h-3.5" />

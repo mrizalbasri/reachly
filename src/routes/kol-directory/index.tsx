@@ -371,7 +371,7 @@ function KolDirectoryPage() {
                         <Button
                           variant={isAdded ? 'secondary' : 'outline'}
                           size="sm"
-                          onClick={() => handleAddToPipeline(kol.id)}
+                          onClick={() => handleAddToPipeline(kol.id, kol.name)}
                           title="Tambah ke Pipeline Prospek"
                         >
                           {isAdded ? (
@@ -389,7 +389,7 @@ function KolDirectoryPage() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDeleteKol(kol.id)}
+                          onClick={() => handleDeleteKol(kol.id, kol.name)}
                           className="text-red-400 hover:text-red-600 hover:bg-red-50"
                           title="Hapus KOL"
                         >

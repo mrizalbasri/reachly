@@ -3,7 +3,6 @@ import {
   kolSchema,
   campaignSchema,
   performanceSchema,
-  getFollowerTier,
 } from '../utils/validations'
 
 describe('Validasi Skema Form Zod', () => {

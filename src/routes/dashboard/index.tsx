@@ -11,12 +11,7 @@ export const Route = createFileRoute('/dashboard/')({
   component: DashboardPage,
 })
 
-function formatFollowers(num: number | null | undefined): string {
-  if (!num) return '0'
-  if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M`
-  if (num >= 1_000) return `${(num / 1_000).toFixed(0)}K`
-  return num.toString()
-}
+
 
 function formatIDR(val: string | number | null | undefined): string {
   if (!val) return 'Rp 0'

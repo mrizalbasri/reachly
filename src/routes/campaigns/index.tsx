@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { Plus, Megaphone, Calendar, DollarSign, Trash2, Layers, Eye } from 'lucide-react'
+import { Plus, Megaphone, Calendar, Trash2, Eye } from 'lucide-react'
 import { getCampaigns, createCampaign, deleteCampaign } from '../../server/campaigns'
 import { Button } from '../../components/ui/button'
 import { Card } from '../../components/ui/card'
 import { Dialog } from '../../components/ui/dialog'
 import { Input } from '../../components/ui/input'
-import { Badge } from '../../components/ui/badge'
 import { useToast } from '../../components/ui/toast'
 import { campaignSchema } from '../../utils/validations'
 
@@ -160,15 +159,15 @@ function CampaignsPage() {
                     </h3>
                     <div className="flex items-center gap-1 shrink-0">
                       <Link to="/campaigns/$campaignId" params={{ campaignId: camp.id }}>
-                        <Button size="icon" variant="outline" className="w-7 h-7" title="Detail Kampanye">
+                        <Button size="sm" variant="outline" className="w-7 h-7 p-0" title="Detail Kampanye">
                           <Eye className="w-3.5 h-3.5" />
                         </Button>
                       </Link>
                       <Button
-                        size="icon"
+                        size="sm"
                         variant="outline"
                         onClick={() => handleDelete(camp.id)}
-                        className="w-7 h-7 hover:text-rose-500 hover:border-rose-100"
+                        className="w-7 h-7 p-0 hover:text-rose-500 hover:border-rose-100"
                         title="Hapus Kampanye"
                       >
                         <Trash2 className="w-3.5 h-3.5" />

@@ -1,5 +1,5 @@
 import { createServerFn } from '@tanstack/react-start'
-import { eq, and, sql, desc } from 'drizzle-orm'
+import { eq, and } from 'drizzle-orm'
 import { db } from '../db/index'
 import { performanceRecords, campaignKols, kols, campaigns } from '../db/schema'
 import { calculateRoiMetrics } from '../utils/formatters'

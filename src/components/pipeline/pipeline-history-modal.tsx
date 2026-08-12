@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { History, Clock, ArrowRight, FileText } from 'lucide-react'
+import { Clock, ArrowRight, FileText } from 'lucide-react'
 import { Dialog } from '../ui/dialog'
 import { Badge } from '../ui/badge'
 import { getPipelineLogs } from '../../server/pipeline'
