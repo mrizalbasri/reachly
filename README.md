@@ -1,246 +1,262 @@
-Welcome to your new TanStack Start app!
+# Reachly 🚀
 
-# Getting Started
+<div align="center">
 
-To run this application:
+[![codecov](https://codecov.io/gh/mrizalbasri/reachly/graph/badge.svg)](https://codecov.io/gh/mrizalbasri/reachly)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6.0-blue.svg)](https://www.typescriptlang.org/)
+[![Framework](https://img.shields.io/badge/Framework-TanStack%20Start-FF4154.svg)](https://tanstack.com/start)
+[![Styling](https://img.shields.io/badge/Styling-Tailwind%20CSS%20v4-38BDF8.svg)](https://tailwindcss.com/)
+[![ORM](https://img.shields.io/badge/ORM-Drizzle-C5F74F.svg)](https://orm.drizzle.team/)
+[![Auth](https://img.shields.io/badge/Auth-Clerk-6C47FF.svg)](https://clerk.com/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+**Platform Manajemen Kerja Sama Influencer/KOL (Key Opinion Leaders) & Campaign ROI Analytics**
+
+[Fitur Utama](#-fitur-utama) • [Arsitektur Sistem](#-arsitektur-sistem) • [Struktur Proyek](#-struktur-proyek) • [Skema Database](#-skema-database-drizzle) • [Panduan Penggunaan](#-panduan-penggunaan-lokal) • [Dokumentasi](#-dokumentasi-internal)
+
+</div>
+
+---
+
+## 📖 Ringkasan Produk
+
+**Reachly** adalah aplikasi web *end-to-end* yang memusatkan seluruh siklus kerja sama *influencer marketing* bagi brand internal maupun agency. 
+
+Dengan **Reachly**, tim marketing dapat beralih dari proses manual (*spreadsheet*, *chat Messenger/WhatsApp* yang tercecer, dan *scrolling* media sosial) menuju alur kerja digital yang terstruktur — dari pencarian kandidat KOL, pelacakan status negosiasi lewat papan Kanban, alokasi anggaran kampanye *real-time*, hingga kalkulasi efisiensi **ROI (CPM, CPE, CPV)**.
+
+---
+
+## 🌟 Masalah & Solusi
+
+| Masalah Operasional | Solusi Reachly |
+| --- | --- |
+| 🔍 **Riset KOL lambat & manual** | Database terpusat dengan filter cepat berdasarkan *Niche*, *Followers*, *Engagement Rate*, dan *Rate Card IDR*. |
+| 📋 **Status negosiasi tercecer** | Papan **Kanban Pipeline** interaktif (*drag-and-drop*) dari Prospek hingga Selesai. |
+| 💰 **Sulit memantau sisa anggaran** | Tracker anggaran kampanye *real-time* dengan indikator visual *over-budget*. |
+| 📊 **Kalkulasi ROI terpisah-pisah** | Penghitungan otomatis metrik **CPM**, **CPE**, dan **CPV** beserta papan peringkat efisiensi KOL. |
+| 📄 **Pelaporan ke klien/atasan rumit** | Fitur ekspor laporan sekali klik ke format **PDF**, **Excel (.xlsx)**, dan **CSV**. |
+
+---
+
+## 🏗️ Arsitektur Sistem
+
+```mermaid
+graph TD
+    User[Client Browser / Desktop / Mobile] -->|HTTPS Requests| Router[TanStack Router + TanStack Start]
+    
+    subgraph Frontend Layer
+        Router --> Layout[iOS/macOS Clean Glassmorphic Theme]
+        Layout --> Components[React 19 + Tailwind CSS v4 + Lucide Icons]
+    end
+    
+    subgraph Server Layer
+        Router --> Auth[Clerk Auth Middleware & Multi-Tenant Orgs]
+        Router --> ServerFn[TanStack Start Server Functions]
+        ServerFn --> Zod[Zod Schema Validation]
+    end
+
+    subgraph Data & Storage Layer
+        ServerFn --> Drizzle[Drizzle ORM]
+        Drizzle --> Database[(PostgreSQL Database)]
+    end
+    
+    subgraph Reporting & Export
+        Components --> Export[CSV / XLSX / PDF Exporters]
+    end
+```
+
+---
+
+## ✨ Fitur Utama
+
+### 1. 📇 Direktori KOL & Database Terpusat
+* Katalog lengkap KOL (Instagram, TikTok, YouTube) dengan metrik *Followers*, *Engagement Rate (E.R)*, *Niche*, dan kontak.
+* Filter cepat berdasarkan tier *Followers* (Nano, Micro, Mid-Tier, Macro, Mega), rentang harga (*Rate Card*), dan kata kunci.
+* Riwayat kerja sama kampanye terdahulu per KOL.
+
+### 2. 🎛️ Pipeline Prospek (Kanban Board)
+* Tracking alur negosiasi 6 tahap: **Prospek $\rightarrow$ Outreach $\rightarrow$ Nego $\rightarrow$ Deal $\rightarrow$ Posting $\rightarrow$ Selesai**.
+* Fitur *Drag-and-Drop* interaktif untuk pemindahan status KOL secara cepat.
+* Catatan/notes khusus per KOL untuk menyimpan histori negosiasi terakhir.
+
+### 3. 🎯 Manajemen Kampanye & Alokasi Anggaran
+* Pembuatan kampanye baru dengan target periode (*Start/End Date*) dan total anggaran.
+* Alokasi KOL ke kampanye tertentu dengan budget individual.
+* Penghitungan sisa anggaran secara *real-time*.
+
+### 4. 📈 Analisis Performa & Kalkulator ROI
+* Input data performa pasca-posting (Views, Likes, Comments, Shares, Konversi).
+* Kalkulasi otomatis metrik efisiensi biaya:
+  * **CPM** *(Cost per Mille / 1.000 Tayangan)* $= \frac{\text{Budget}}{\text{Views}} \times 1.000$
+  * **CPE** *(Cost per Engagement)* $= \frac{\text{Budget}}{\text{Likes + Comments + Shares}}$
+  * **CPV** *(Cost per View)* $= \frac{\text{Budget}}{\text{Views}}$
+* Papan peringkat KOL paling efisien berdasarkan data faktual.
+
+### 5. 📑 Ekspor Laporan Lanjutan
+* Ekspor data direktori, campaign, dan kalkulasi performa ke format **Excel (.xlsx)**, **CSV**, serta cetak dokumen **PDF**.
+
+---
+
+## 🛠️ Teknologi Utama (Tech Stack)
+
+| Layer | Teknologi | Kegunaan |
+| --- | --- | --- |
+| **Core Framework** | [TanStack Start](https://tanstack.com/start) & [React 19](https://react.dev/) | Fullstack React SSR framework berbasis Vite + Nitro |
+| **Routing** | [TanStack Router](https://tanstack.com/router) | Type-safe file-based routing |
+| **Styling** | [Tailwind CSS v4](https://tailwindcss.com/) & Lucide React | Custom iOS/macOS clean glassmorphism design system |
+| **Database & ORM** | [Drizzle ORM](https://orm.drizzle.team/) & PostgreSQL (`pg`) | Schema declaration type-safe & query builder |
+| **Autentikasi** | [Clerk](https://clerk.com/) (`@clerk/tanstack-react-start`) | Session management, auth middleware, & multi-tenant orgs |
+| **Form Validation** | [Zod](https://zod.dev/) | Validasi skema input KOL, Campaign, & Performance |
+| **Testing & CI/CD** | [Vitest](https://vitest.dev/) & [Codecov](https://codecov.io/) | Unit testing dengan 100% coverage pada fungsi utilitas |
+
+---
+
+## 📁 Struktur Proyek
+
+```
+reachly/
+├── .github/
+│   └── workflows/
+│       └── codecov.yml          # GitHub Actions CI workflow dengan Vitest & Codecov
+├── docs/                        # Obsidian Vault Hub & Dokumentasi Teknis
+│   ├── Index.md                 # Hub Navigasi Utama
+│   ├── Prd.md                   # Product Requirements Document & Roadmap
+│   ├── Architecture.md          # Spesifikasi Arsitektur & Skema Database
+│   └── Design.md                # Design System & Token Warna iOS/macOS
+├── src/
+│   ├── components/              # Reusable Component Library
+│   │   ├── landing/             # Komponen Animasi & Section Landing Page
+│   │   ├── layout/              # Collapsible Sidebar & Top Header
+│   │   ├── pipeline/            # Kanban Board Components
+│   │   └── ui/                  # Cards, Buttons, Dialogs, Toasts, Badges
+│   ├── db/                      # Skema Database & Instansi Drizzle
+│   │   ├── index.ts             # Koneksi Database Client
+│   │   └── schema.ts            # Skema Tabel & Relasi Drizzle PostgreSQL
+│   ├── routes/                  # File-based Routes (TanStack Router)
+│   │   ├── __root.tsx           # Shell Document Root
+│   │   ├── index.tsx            # Halaman Landing Page
+│   │   ├── dashboard/           # Dasbor Ringkasan
+│   │   ├── kol-directory/       # Direktori & Katalog KOL
+│   │   ├── pipeline/            # Kanban Board Pipeline
+│   │   ├── campaigns/           # Manajemen Kampanye & Anggaran
+│   │   └── analytics/           # Analisis Performa & ROI
+│   ├── server/                  # TanStack Start Server Functions
+│   │   ├── analytics.ts
+│   │   ├── campaigns.ts
+│   │   ├── kol.ts
+│   │   └── pipeline.ts
+│   ├── tests/                   # Vitest Suite (Unit Tests)
+│   │   ├── filter.test.ts
+│   │   ├── roi.test.ts
+│   │   └── validations.test.ts
+│   └── utils/                   # Formatters & Zod Validations
+├── drizzle.config.ts            # Konfigurasi Migrasi Drizzle Kit
+├── vite.config.ts               # Konfigurasi Vite & Plugins
+├── vitest.config.ts             # Konfigurasi Testing Vitest & V8 Coverage
+└── package.json
+```
+
+---
+
+## 🗄️ Skema Database (Drizzle)
+
+```typescript
+// src/db/schema.ts
+export const pipelineStatusEnum = pgEnum("pipeline_status", [
+  "prospek", "outreach", "nego", "deal", "posting", "selesai",
+]);
+
+export const kols = pgTable("kols", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  platform: text("platform").notNull(), // Instagram / TikTok / YouTube
+  username: text("username"),
+  niche: text("niche"),
+  followers: integer("followers"),
+  engagementRate: numeric("engagement_rate"),
+  ratePerPost: numeric("rate_per_post"), // IDR
+  contact: text("contact"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const campaigns = pgTable("campaigns", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  startDate: timestamp("start_date"),
+  endDate: timestamp("end_date"),
+  totalBudget: numeric("total_budget"), // IDR
+});
+
+export const campaignKols = pgTable("campaign_kols", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  campaignId: uuid("campaign_id").references(() => campaigns.id).notNull(),
+  kolId: uuid("kol_id").references(() => kols.id).notNull(),
+  allocatedBudget: numeric("allocated_budget"),
+  status: pipelineStatusEnum("status").default("prospek"),
+});
+```
+
+---
+
+## 🚀 Panduan Penggunaan Lokal
+
+### 1. Prasyarat
+* Node.js v20+ atau v24+
+* pnpm v10+
+
+### 2. Instalasi & Setup Environment
+Cloning repository dan install dependensi:
 
 ```bash
+git clone git@github.com:mrizalbasri/reachly.git
+cd reachly
 pnpm install
+```
+
+Salin file sampel environment dan sesuaikan kredensial:
+
+```bash
+cp .env.example .env.local
+```
+
+Isi kredensial berikut di `.env.local`:
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/reachly_db"
+VITE_CLERK_PUBLISHABLE_KEY="pk_test_..."
+CLERK_SECRET_KEY="sk_test_..."
+```
+
+### 3. Menjalankan Server Pengembang
+
+```bash
 pnpm dev
 ```
 
-# Building For Production
+Aplikasi akan berjalan di `http://localhost:3000`.
 
-To build this application for production:
-
-```bash
-pnpm build
-```
-
-## Styling
-
-This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
-
-### Removing Tailwind CSS
-
-If you prefer not to use Tailwind CSS:
-
-1. Remove the demo pages in `src/routes/demo/`
-2. Replace the Tailwind import in `src/styles.css` with your own styles
-3. Remove `tailwindcss()` from the plugins array in `vite.config.ts`
-4. Remove `@tailwindcss/vite` and `tailwindcss` from `package.json`
-
-## Linting & Formatting
-
-
-This project uses [eslint](https://eslint.org/) and [prettier](https://prettier.io/) for linting and formatting. Eslint is configured using [tanstack/eslint-config](https://tanstack.com/config/latest/docs/eslint). The following scripts are available:
+### 4. Menjalankan Unit Testing & Coverage Report
 
 ```bash
-pnpm lint
-pnpm format
-pnpm check
+# Jalankan unit test
+pnpm test
+
+# Jalankan test dengan pelaporan coverage
+pnpm test -- --coverage
 ```
 
+---
 
-## Setting up Clerk
+## 📚 Dokumentasi Internal
 
-1. Create an application in the [Clerk dashboard](https://dashboard.clerk.com).
-2. Copy its publishable and secret keys into `.env.local`:
+Seluruh dokumen spesifikasi arsitektur dan panduan desain tersimpan dalam vault markdown di folder `docs/`:
 
-   ```bash
-   VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
-   CLERK_SECRET_KEY=sk_test_...
-   ```
+* 📌 [Vault Index](file:///d:/Coding/reachly/docs/Index.md) — Peta navigasi dokumentasi internal
+* 📜 [Product Requirements Document (PRD)](file:///d:/Coding/reachly/docs/Prd.md) — Detail roadmap & fitur
+* 🏗️ [Architecture Map](file:///d:/Coding/reachly/docs/Architecture.md) — Arsitektur teknis & skema database
+* 🎨 [Design System Spec](file:///d:/Coding/reachly/docs/Design.md) — Token warna & panduan UX iOS/macOS
 
-3. Start the app and visit `/demo/clerk`.
+---
 
-### What's wired up
+## 📄 Lisensi
 
-- `clerkMiddleware()` authenticates each server request from `src/start.ts`.
-- `<ClerkProvider>` supplies auth state throughout the app.
-- `<SignInButton>` and `<UserButton>` in the header respond to the session.
-- `/demo/clerk` shows Clerk's prebuilt sign-in UI and signed-in user data.
-
-### Protecting a route
-
-Use `auth()` in a loader or server function when authorization must happen on the
-server:
-
-```tsx
-import { createFileRoute, redirect } from '@tanstack/react-router'
-import { createServerFn } from '@tanstack/react-start'
-import { auth } from '@clerk/tanstack-react-start/server'
-
-const getAuth = createServerFn({ method: 'GET' }).handler(async () => {
-  const { userId } = await auth()
-  return { userId }
-})
-
-export const Route = createFileRoute('/dashboard')({
-  beforeLoad: async () => {
-    const { userId } = await getAuth()
-    if (!userId) throw redirect({ to: '/' })
-  },
-})
-```
-
-`<Show when="signed-in">` remains useful for presentation, but server-side checks
-are the security boundary. See Clerk's [TanStack Start docs](https://clerk.com/docs/tanstack-react-start/getting-started/quickstart).
-
-### Production checklist
-
-- Set both keys in the production environment; never expose `CLERK_SECRET_KEY`.
-- Use production keys from a dedicated production Clerk instance.
-- Configure the production domain and any social connections in the Clerk dashboard.
-
-
-
-## Routing
-
-This project uses [TanStack Router](https://tanstack.com/router) with file-based routing. Routes are managed as files in `src/routes`.
-
-### Adding A Route
-
-To add a new route to your application just add a new file in the `./src/routes` directory.
-
-TanStack will automatically generate the content of the route file for you.
-
-Now that you have two routes you can use a `Link` component to navigate between them.
-
-### Adding Links
-
-To use SPA (Single Page Application) navigation you will need to import the `Link` component from `@tanstack/react-router`.
-
-```tsx
-import { Link } from "@tanstack/react-router";
-```
-
-Then anywhere in your JSX you can use it like so:
-
-```tsx
-<Link to="/about">About</Link>
-```
-
-This will create a link that will navigate to the `/about` route.
-
-More information on the `Link` component can be found in the [Link documentation](https://tanstack.com/router/v1/docs/framework/react/api/router/linkComponent).
-
-### Using A Layout
-
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you render `{children}` in the `shellComponent`.
-
-Here is an example layout that includes a header:
-
-```tsx
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
-
-export const Route = createRootRoute({
-  head: () => ({
-    meta: [
-      { charSet: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'My App' },
-    ],
-  }),
-  shellComponent: ({ children }) => (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        <header>
-          <nav>
-            <Link to="/">Home</Link>
-            <Link to="/about">About</Link>
-          </nav>
-        </header>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  ),
-})
-```
-
-More information on layouts can be found in the [Layouts documentation](https://tanstack.com/router/latest/docs/framework/react/guide/routing-concepts#layouts).
-
-## Server Functions
-
-TanStack Start provides server functions that allow you to write server-side code that seamlessly integrates with your client components.
-
-```tsx
-import { createServerFn } from '@tanstack/react-start'
-
-const getServerTime = createServerFn({
-  method: 'GET',
-}).handler(async () => {
-  return new Date().toISOString()
-})
-
-// Use in a component
-function MyComponent() {
-  const [time, setTime] = useState('')
-  
-  useEffect(() => {
-    getServerTime().then(setTime)
-  }, [])
-  
-  return <div>Server time: {time}</div>
-}
-```
-
-## API Routes
-
-You can create API routes by using the `server` property in your route definitions:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-import { json } from '@tanstack/react-start'
-
-export const Route = createFileRoute('/api/hello')({
-  server: {
-    handlers: {
-      GET: () => json({ message: 'Hello, World!' }),
-    },
-  },
-})
-```
-
-## Data Fetching
-
-There are multiple ways to fetch data in your application. You can use TanStack Query to fetch data from a server. But you can also use the `loader` functionality built into TanStack Router to load the data for a route before it's rendered.
-
-For example:
-
-```tsx
-import { createFileRoute } from '@tanstack/react-router'
-
-export const Route = createFileRoute('/people')({
-  loader: async () => {
-    const response = await fetch('https://swapi.dev/api/people')
-    return response.json()
-  },
-  component: PeopleComponent,
-})
-
-function PeopleComponent() {
-  const data = Route.useLoaderData()
-  return (
-    <ul>
-      {data.results.map((person) => (
-        <li key={person.name}>{person.name}</li>
-      ))}
-    </ul>
-  )
-}
-```
-
-Loaders simplify your data fetching logic dramatically. Check out more information in the [Loader documentation](https://tanstack.com/router/latest/docs/framework/react/guide/data-loading#loader-parameters).
-
-
-
-# Learn More
-
-You can learn more about all of the offerings from TanStack in the [TanStack documentation](https://tanstack.com).
-
-For TanStack Start specific documentation, visit [TanStack Start](https://tanstack.com/start).
+Hak Cipta © 2026 M. Rizal Basri. Proyek ini dilindungi di bawah **[MIT License](LICENSE)**.
