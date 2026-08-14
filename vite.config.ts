@@ -12,4 +12,4 @@ export default defineConfig(({ mode }) => ({
     tanstackStart(),
     viteReact(),
   ],
-})
+}))

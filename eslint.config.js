@@ -3,6 +3,20 @@
 import { tanstackConfig } from '@tanstack/eslint-config'
 
 export default [
+  {
+    ignores: [
+      'eslint.config.js',
+      'prettier.config.js',
+      '.agents/**',
+      '.codegraph/**',
+      '.tanstack/**',
+      'dist/**',
+      'docs/**',
+      'coverage/**',
+      'public/**',
+      'drizzle/**',
+    ],
+  },
   ...tanstackConfig,
   {
     rules: {
@@ -12,9 +26,9 @@ export default [
       '@typescript-eslint/array-type': 'off',
       '@typescript-eslint/require-await': 'off',
       'pnpm/json-enforce-catalog': 'off',
+      'import/consistent-type-specifier-style': 'off',
+      '@typescript-eslint/no-unnecessary-condition': 'off',
     },
   },
-  {
-    ignores: ['eslint.config.js', 'prettier.config.js'],
-  },
 ]
+
